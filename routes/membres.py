@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from db import get_db
 
@@ -12,7 +12,7 @@ def list_membres():
     cursor.execute("""
             SELECT m.*, e.nom AS equipe_nom
             FROM Membre m
-            LEFT JOIN Appartenance a ON m.licence = a.membre_id AND a.date_sortie IS NULL
+            LEFT JOIN Appartenance a ON m.num_licence = a.membre_id AND a.date_sortie IS NULL
             LEFT JOIN Equipe e ON a.equipe_id = e.code
         """)
     # a.date_sortie IS NULL parce qu'on veut l'équipe actuelle, pas les équipes précédentes si il y en a
@@ -34,6 +34,9 @@ def fiche(id: int):
         (id,),
     )
     membre = cursor.fetchone()
+
+    if not membre:
+        abort(404)
 
     cursor.execute(
         """
@@ -123,6 +126,9 @@ def edit(id: int):
     membre = cursor.fetchone()
     cursor.close()
 
+    if not membre:
+        abort(404)
+
     return render_template("membres/edit.html", membre=membre)
 
 
@@ -136,4 +142,4 @@ def delete(id: int):
     cursor.close()
 
     flash("Membre supprimé avec succès")
-    return redirect("membres.liste_membres")
+    return redirect("membres.list_membres")

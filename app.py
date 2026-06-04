@@ -2,6 +2,7 @@ from flask import Flask
 
 from config import Config
 from db import close_db
+from routes.membres import membres_bp
 
 
 def create_app(config_class=Config):
@@ -14,7 +15,7 @@ def create_app(config_class=Config):
     if not app.config["DB_CONFIG"].get("password"):
         raise ValueError("No password set in .env")
 
-    # TODO: add app.register_blueprint() once routes are configured
+    app.register_blueprint(membres_bp)
 
     return app
 
