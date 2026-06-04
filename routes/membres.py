@@ -9,18 +9,45 @@ membres_bp = Blueprint("membres", __name__, url_prefix="/membres")
 def list_membres():
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("""
-            SELECT m.*, e.nom AS equipe_nom
+
+    recherche = request.args.get("recherche", "")
+    equipe_filtre = request.args.get("equipe")
+
+    query = """
+            SELECT m.*, e.nom AS equipe
             FROM Membre m
             LEFT JOIN Appartenance a ON m.num_licence = a.membre_id AND a.date_sortie IS NULL
             LEFT JOIN Equipe e ON a.equipe_id = e.code
-        """)
+            WHERE 1 = 1
+        """
     # a.date_sortie IS NULL parce qu'on veut l'équipe actuelle, pas les équipes précédentes si il y en a
     # double join parce que le membre n'a pas directement accès à son équipe
+
+    params = []
+
+    if recherche:
+        query += " AND (m.nom LIKE %s OR m.prenom LIKE %s)"
+        params.extend([f"%{recherche}%", f"%{recherche}%"])
+
+    if equipe_filtre:
+        query += " AND e.code = %s"
+        params.append(equipe_filtre)
+
+    cursor.execute(query, params)
     membres = cursor.fetchall()
+
+    cursor.execute("SELECT code, nom FROM Equipe")
+    equipes = cursor.fetchall()
+
     cursor.close()
 
-    return render_template("membres/list.html", membres=membres)
+    return render_template(
+        "membres/list.html",
+        membres=membres,
+        equipes=equipes,
+        equipe_filtre=equipe_filtre,
+        recherche=recherche,
+    )
 
 
 @membres_bp.route("/<int:id>", methods=["GET"])
@@ -91,7 +118,7 @@ def add():
         cursor.execute(
             """
                 INSERT INTO Membre (nom, prenom, date_naissance, telephone, email, date_adhesion)
-                VALUES (%s, %s, %s, %s, %s, CURDATE())
+                VALUES (%s, %s, %s, %s, %s, %s)
             """,
             (
                 request.form["nom"],
@@ -99,6 +126,7 @@ def add():
                 request.form["date_naissance"],
                 request.form["telephone"],
                 request.form["email"],
+                request.form["date_adhesion"],
             ),
         )
 
