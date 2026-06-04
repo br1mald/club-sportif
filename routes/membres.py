@@ -123,7 +123,7 @@ def edit(id: int):
     membre = cursor.fetchone()
     cursor.close()
 
-    render_template("membres/edit.html", membre=membre)
+    return render_template("membres/edit.html", membre=membre)
 
 
 @membres_bp.route("/<int:id>/delete", methods=["POST"])
