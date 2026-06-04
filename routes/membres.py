@@ -102,7 +102,7 @@ def edit(id: int):
             """
                 UPDATE Membre SET
                 nom = %s, prenom = %s, telephone = %s, email = %s
-                WHERE id = %s
+                WHERE num_licence = %s
             """,
             (
                 request.form["nom"],
@@ -119,7 +119,7 @@ def edit(id: int):
         flash("Membre modifié avec succès")
         return redirect(url_for("membres.fiche", id=id))
 
-    cursor.execute("SELECT * FROM Membre WHERE id = %s", (id,))
+    cursor.execute("SELECT * FROM Membre WHERE num_licence = %s", (id,))
     membre = cursor.fetchone()
     cursor.close()
 
