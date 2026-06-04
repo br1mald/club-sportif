@@ -124,3 +124,16 @@ def edit(id: int):
     cursor.close()
 
     render_template("membres/edit.html", membre=membre)
+
+
+@membres_bp.route("/<int:id>/delete", methods=["POST"])
+def delete(id: int):
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("DELETE FROM Membre WHERE num_licence = %s", (id,))
+    db.commit()
+    cursor.close()
+
+    flash("Membre supprimé avec succès")
+    return redirect("membres.liste_membres")
