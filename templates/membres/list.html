@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Membres{% endblock %}
+{% block page_title %}Gestion des Membres{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <form class="d-flex gap-2" method="GET" action="/membres">
+        <input type="text" name="recherche" class="form-control" 
+               placeholder="Rechercher par nom..." 
+               value="{{ recherche or '' }}">
+        <select name="equipe" class="form-select" style="width: 200px;">
+            <option value="">Toutes les équipes</option>
+            {% for equipe in equipes %}
+                <option value="{{ equipe.code_equipe }}" 
+                    {% if equipe_filtre == equipe.code_equipe %}selected{% endif %}>
+                    {{ equipe.nom }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-search"></i>
+        </button>
+    </form>
+    <a href="/membres/ajouter" class="btn btn-primary">
+        <i class="bi bi-person-plus-fill"></i> Nouveau membre
+    </a>
+</div>
+
+<!-- Tableau des membres -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Licence</th>
+                    <th>Nom complet</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Date d'adhésion</th>
+                    <th>Équipe</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for membre in membres %}
+                <tr>
+                    <td><span class="badge bg-secondary">{{ membre.num_licence }}</span></td>
+                    <td><strong>{{ membre.nom }} {{ membre.prenom }}</strong></td>
+                    <td>{{ membre.telephone }}</td>
+                    <td>{{ membre.email }}</td>
+                    <td>{{ membre.date_adhesion }}</td>
+                    <td>
+                        {% if membre.equipe %}
+                            <span class="badge bg-primary">{{ membre.equipe }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/membres/{{ membre.num_licence }}" 
+                           class="btn btn-sm btn-info text-white" title="Voir fiche">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a href="/membres/{{ membre.num_licence }}/modifier" 
+                           class="btn btn-sm btn-warning" title="Modifier">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form method="POST" action="/membres/{{ membre.num_licence }}/supprimer" 
+                              class="d-inline"
+                              onsubmit="return confirm('Supprimer ce membre ?')">
+                            <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        Aucun membre trouvé
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

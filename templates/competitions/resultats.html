@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Résultats{% endblock %}
+{% block page_title %}Résultats de la compétition{% endblock %}
+
+{% block content %}
+<!-- Infos compétition -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <strong><i class="bi bi-trophy"></i> Compétition :</strong><br>
+                {{ competition.nom }}
+            </div>
+            <div class="col-md-3">
+                <strong><i class="bi bi-calendar"></i> Date :</strong><br>
+                {{ competition.date }}
+            </div>
+            <div class="col-md-3">
+                <strong><i class="bi bi-geo-alt"></i> Lieu :</strong><br>
+                {{ competition.lieu }}
+            </div>
+            <div class="col-md-3">
+                <strong><i class="bi bi-tag"></i> Type :</strong><br>
+                {% if competition.type == 'championnat' %}
+                    <span class="badge bg-danger">Championnat</span>
+                {% elif competition.type == 'coupe' %}
+                    <span class="badge bg-warning">Coupe</span>
+                {% else %}
+                    <span class="badge bg-info">Amical</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Saisie des résultats -->
+<div class="card shadow-sm">
+    <div class="card-header bg-success text-white">
+        <i class="bi bi-award"></i> Résultats par équipe
+    </div>
+    <div class="card-body p-0">
+        <form method="POST"
+              action="/competitions/{{ competition.id_competition }}/resultats">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Équipe</th>
+                        <th>Résultat / Score</th>
+                        <th>Classement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in participations %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-primary">{{ p.equipe }}</span>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control form-control-sm"
+                                   name="resultat_{{ p.code_equipe }}"
+                                   value="{{ p.resultat or '' }}"
+                                   placeholder="Ex: 2-1">
+                        </td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm"
+                                   name="classement_{{ p.code_equipe }}"
+                                   value="{{ p.classement or '' }}"
+                                   placeholder="1er, 2ème...">
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">
+                            Aucune équipe inscrite
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="p-3">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Enregistrer les résultats
+                </button>
+                <a href="/competitions" class="btn btn-secondary ms-2">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

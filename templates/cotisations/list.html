@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Cotisations{% endblock %}
+{% block page_title %}Gestion des Cotisations{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <form class="d-flex gap-2" method="GET" action="/cotisations">
+        <select name="statut" class="form-select" style="width: 180px;">
+            <option value="">Tous les statuts</option>
+            <option value="payee" {% if statut_filtre == 'payee' %}selected{% endif %}>
+                Payées
+            </option>
+            <option value="impayee" {% if statut_filtre == 'impayee' %}selected{% endif %}>
+                Impayées
+            </option>
+        </select>
+        <select name="saison" class="form-select" style="width: 180px;">
+            <option value="">Toutes les saisons</option>
+            {% for s in saisons %}
+                <option value="{{ s }}" {% if saison_filtre == s %}selected{% endif %}>
+                    {{ s }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-outline-primary">
+            <i class="bi bi-filter"></i> Filtrer
+        </button>
+    </form>
+</div>
+
+<!-- Alerte membres en retard -->
+{% if nb_impayees > 0 %}
+<div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i>
+    <strong>{{ nb_impayees }} membre(s)</strong> ont des cotisations impayées pour la saison en cours.
+</div>
+{% endif %}
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Membre</th>
+                    <th>Saison</th>
+                    <th>Montant</th>
+                    <th>Date paiement</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in cotisations %}
+                <tr>
+                    <td><strong>{{ c.nom }} {{ c.prenom }}</strong></td>
+                    <td>{{ c.saison }}</td>
+                    <td>{{ c.montant }} FCFA</td>
+                    <td>{{ c.date_paiement or '—' }}</td>
+                    <td>
+                        {% if c.statut == 'payee' %}
+                            <span class="badge bg-success">Payée</span>
+                        {% else %}
+                            <span class="badge bg-danger">Impayée</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if c.statut == 'impayee' %}
+                        <a href="/cotisations/{{ c.id_cotisation }}/payer"
+                           class="btn btn-sm btn-success">
+                            <i class="bi bi-cash"></i> Payer
+                        </a>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        Aucune cotisation trouvée
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
