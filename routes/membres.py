@@ -89,7 +89,7 @@ def fiche(id: int):
     cursor.execute(
         """
             SELECT en.date, en.theme, p.presence, p.motif_absence
-            FROM Presense p
+            FROM Presence p
             JOIN Entrainement en ON p.entrainement_id = en.id
             WHERE p.membre_id = %s
             ORDER BY en.date DESC
