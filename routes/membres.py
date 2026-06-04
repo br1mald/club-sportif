@@ -20,7 +20,7 @@ def list_membres():
     membres = cursor.fetchall()
     cursor.close()
 
-    return render_template("membres/liste.html", membres=membres)
+    return render_template("membres/list.html", membres=membres)
 
 
 @membres_bp.route("/<int:id>", methods=["GET"])
@@ -51,32 +51,46 @@ def fiche(id: int):
         (id,),
     )
     # CASE p.presence = 1 THEN 1 END ne comptabilise l'entrée que si le membre est présent (p.presence = 1)
-    assiduite = cursor.fetchone()
+    assiduite: dict | None = cursor.fetchone()  # type: ignore
+    taux_assiduite = int(assiduite["taux"]) if assiduite and assiduite["taux"] else 0
 
     cursor.execute(
         "SELECT * FROM Cotisation c WHERE membre_id = %s ORDER BY saison DESC", (id,)
     )
     cotisations = cursor.fetchall()
 
+    cursor.execute(
+        """
+            SELECT en.date, en.theme, p.presence, p.motif_absence
+            FROM Presense p
+            JOIN Entrainement en ON p.entrainement_id = en.id
+            WHERE p.membre_id = %s
+            ORDER BY en.date DESC
+        """,
+        (id,),
+    )
+    presences = cursor.fetchall()
+
     cursor.close()
 
     return render_template(
         "membres/fiche.html",
         membre=membre,
-        assiduite=assiduite,
+        taux_assiduite=taux_assiduite,
         cotisations=cotisations,
+        presences=presences,
     )
 
 
-@membres_bp.route("/add", methods=["GET", "POST"])
+@membres_bp.route("/ajouter", methods=["GET", "POST"])
 def add():
-    if request.method == "POST":
-        db = get_db()
-        cursor = db.cursor()
+    db = get_db()
+    cursor = db.cursor()
 
+    if request.method == "POST":
         cursor.execute(
             """
-                INSERT INTO Membre (nom, prenom, date_naissance, telephone, email, date_inscription)
+                INSERT INTO Membre (nom, prenom, date_naissance, telephone, email, date_adhesion)
                 VALUES (%s, %s, %s, %s, %s, CURDATE())
             """,
             (
@@ -87,15 +101,30 @@ def add():
                 request.form["email"],
             ),
         )
+
+        if request.form.get("code_equipe"):
+            cursor.execute(
+                """
+                    INSERT INTO Appartenance (membre_id, equipe_id, date_adhesion)
+                    VALUES (%s, %s, CURDATE())
+                """,
+                (cursor.lastrowid, request.form["code_equipe"]),
+            )
+
         db.commit()
         cursor.close()
         flash("Membre ajouté avec succès")
         return redirect(url_for("membres.list_membres"))
 
-    return render_template("membres/add.html")
+    cursor.execute("""
+            SELECT e.nom, e.categorie, e.code FROM Equipe e
+        """)
+    equipes = cursor.fetchall()
+
+    return render_template("membres/add.html", equipes=equipes)
 
 
-@membres_bp.route("/<int:id>/edit", methods=["GET", "POST"])
+@membres_bp.route("/<int:id>/modifier", methods=["GET", "POST"])
 def edit(id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -116,6 +145,39 @@ def edit(id: int):
             ),
         )
 
+        cursor.execute(
+            """
+                SELECT a.equipe_id FROM Appartenance a
+                WHERE a.membre_id = %s and a.date_sortie IS NULL
+            """,
+            (id,),
+        )
+
+        current_team = cursor.fetchone()
+        if request.form.get("code_equipe"):
+            if not current_team:
+                cursor.execute(
+                    "INSERT INTO Appartenance (membre_id, equipe_id, date_adhesion) VALUES (%s, %s, CURDATE())",
+                    (id, request.form["code_equipe"]),
+                )
+
+            elif current_team["equipe_id"] != request.form["code_equipe"]:  # type: ignore
+                cursor.execute(
+                    """
+                        UPDATE Appartenance SET date_sortie = CURDATE()
+                        WHERE membre_id = %s AND date_sortie IS NULL
+                    """,
+                    (id,),
+                )
+
+                cursor.execute(
+                    """
+                        INSERT INTO Appartenance(membre_id, equipe_id, date_adhesion)
+                        VALUES (%s, %s, CURDATE())
+                    """,
+                    (id, request.form["code_equipe"]),
+                )
+
         db.commit()
         cursor.close()
 
@@ -124,15 +186,21 @@ def edit(id: int):
 
     cursor.execute("SELECT * FROM Membre WHERE num_licence = %s", (id,))
     membre = cursor.fetchone()
-    cursor.close()
 
     if not membre:
         abort(404)
 
-    return render_template("membres/edit.html", membre=membre)
+    cursor.execute("""
+            SELECT e.nom, e.categorie FROM Equipe e
+        """)
+
+    equipes = cursor.fetchall()
+
+    cursor.close()
+    return render_template("membres/edit.html", membre=membre, equipes=equipes)
 
 
-@membres_bp.route("/<int:id>/delete", methods=["POST"])
+@membres_bp.route("/<int:id>/supprimer", methods=["POST"])
 def delete(id: int):
     db = get_db()
     cursor = db.cursor()
