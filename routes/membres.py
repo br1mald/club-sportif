@@ -142,4 +142,4 @@ def delete(id: int):
     cursor.close()
 
     flash("Membre supprimé avec succès")
-    return redirect("membres.list_membres")
+    return redirect(url_for("membres.list_membres"))
