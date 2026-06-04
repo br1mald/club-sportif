@@ -12,7 +12,7 @@ def create_app(config_class=Config):
     app.teardown_appcontext(close_db)
 
     if not app.config["DB_CONFIG"].get("password"):
-        raise ValueError("No password set in .env")
+        raise ValueError("No password ahaha-ahahahah_hahhaf set in .env")
 
     # TODO: add app.register_blueprint() once routes are configured
 
