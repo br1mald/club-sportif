@@ -70,7 +70,7 @@ def fiche(id: int):
 
     cursor.execute(
         """
-            SELECT COUNT(CASE WHEN p.presence = 1 THEN 1 END) * 100.0 / COUNT(*) AS taux
+            SELECT COUNT(CASE WHEN p.presence = 1 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0) AS taux
             FROM Presence p
             JOIN Entrainement en ON p.entrainement_id = en.id
             JOIN Appartenance a ON a.membre_id = p.membre_id
@@ -151,6 +151,8 @@ def add():
         """)
     equipes = cursor.fetchall()
 
+    cursor.close()
+
     return render_template("membres/add.html", equipes=equipes)
 
 
@@ -229,7 +231,7 @@ def edit(id: int):
         """SELECT m.*, a.equipe_id AS code_equipe
         FROM Membre m
         LEFT JOIN Appartenance a ON m.num_licence = a.membre_id AND a.date_sortie IS NULL
-        WHERE num_licence = %s""",
+        WHERE m.num_licence = %s""",
         (id,),
     )
     membre = cursor.fetchone()
