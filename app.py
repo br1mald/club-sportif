@@ -2,6 +2,7 @@ from flask import Flask
 
 from config import Config
 from db import close_db
+from routes.entrainements import entrainements_bp
 from routes.membres import membres_bp
 
 
@@ -16,6 +17,7 @@ def create_app(config_class=Config):
         raise ValueError("No password set in .env")
 
     app.register_blueprint(membres_bp)
+    app.register_blueprint(entrainements_bp)
 
     return app
 
