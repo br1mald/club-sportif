@@ -193,7 +193,7 @@ def edit(id: int):
                     (id, request.form["code_equipe"]),
                 )
 
-            elif current_team["equipe_id"] != request.form["code_equipe"]:  # type: ignore
+            elif str(current_team["equipe_id"]) != request.form["code_equipe"]:  # type: ignore
                 cursor.execute(
                     """
                         UPDATE Appartenance SET date_sortie = CURDATE()
