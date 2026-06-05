@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from db import get_db
 
@@ -77,7 +77,7 @@ def add():
     return render_template("entrainements/add.html", equipes=equipes)
 
 
-@entrainements_bp.route("/<id>/presence", methods=["GET", "POST"])
+@entrainements_bp.route("/<id>/presences", methods=["GET", "POST"])
 def presence(id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -96,7 +96,7 @@ def presence(id: int):
 
         for m in membres:
             present = 1 if request.form.get(f"present_{m['membre_id']}") else 0  # type: ignore
-            motif = request.form.get(f"motif_{m['motif']}")  # type: ignore
+            motif = request.form.get(f"motif_{m['membre_id']}")  # type: ignore
             cursor.execute(
                 """
                     INSERT INTO Presence (membre_id, entrainement_id, present, motif_absence)
@@ -126,10 +126,13 @@ def presence(id: int):
 
     entrainement = cursor.fetchone()
 
-    cursor.execute("""
+    cursor.execute(
+        """
             SELECT COUNT(*) AS presents FROM Presence
-            WHERE present = 1
-        """)
+            WHERE present = 1 AND entrainement_id = %s
+        """,
+        (id,),
+    )
 
     nb_presents = cursor.fetchone()["presents"]  # type: ignore
 
@@ -146,10 +149,30 @@ def presence(id: int):
 
     taux = (nb_presents / total_membres) * 100 if total_membres > 0 else 0  # type: ignore
 
+    cursor.execute(
+        """
+            SELECT m.nom, m.prenom, m.num_licence, p.present, p.motif_absence
+            FROM Membre m
+            JOIN Appartenance a ON a.membre_id = m.num_licence
+            LEFT JOIN Presence p ON p.membre_id = m.num_licence AND p.entrainement_id = %s
+            WHERE a.equipe_id = (SELECT equipe_id FROM Entrainement en WHERE en.id = %s)
+            AND a.date_sortie IS NULL
+        """,
+        (
+            id,
+            id,
+        ),
+    )
+
+    membres = cursor.fetchall()
+
+    cursor.close()
+
     return render_template(
         "entrainements/presence.html",
         entrainement=entrainement,
         nb_presents=nb_presents,
         total_membres=total_membres,
         taux=taux,
+        membres=membres,
     )
