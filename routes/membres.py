@@ -70,8 +70,7 @@ def fiche(id: int):
 
     cursor.execute(
         """
-            SELECT COUNT (CASE WHEN p.presence = 1 THEN 1 END) * 100.0 /
-            COUNT (*) AS taux
+            SELECT COUNT(CASE WHEN p.presence = 1 THEN 1 END) * 100.0 / COUNT(*) AS taux
             FROM Presence p
             JOIN Entrainement en ON p.entrainement_id = en.id
             JOIN Appartenance a ON a.membre_id = p.membre_id
