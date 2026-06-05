@@ -5,7 +5,6 @@
 
 {% block content %}
 <div class="row">
-    <!-- Infos personnelles -->
     <div class="col-md-4">
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white">
@@ -13,7 +12,7 @@
             </div>
             <div class="card-body">
                 <div class="text-center mb-3">
-                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center 
+                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center
                                 justify-content-center text-white"
                          style="width:80px; height:80px; font-size:2rem;">
                         {{ membre.prenom[0] }}{{ membre.nom[0] }}
@@ -27,16 +26,17 @@
                 <p><i class="bi bi-calendar"></i> Né(e) le {{ membre.date_naissance }}</p>
                 <p><i class="bi bi-calendar-check"></i> Adhésion : {{ membre.date_adhesion }}</p>
                 {% if membre.equipe %}
-                <p><i class="bi bi-shield"></i> 
+                <p><i class="bi bi-shield"></i>
                     <span class="badge bg-primary">{{ membre.equipe }}</span>
                 </p>
                 {% endif %}
                 <div class="d-flex gap-2 mt-3">
-                    <a href="/membres/{{ membre.num_licence }}/modifier" 
+                    <a href="{{ url_for('membres.edit', id=membre.num_licence) }}"
                        class="btn btn-warning btn-sm w-100">
                         <i class="bi bi-pencil"></i> Modifier
                     </a>
-                    <a href="/membres" class="btn btn-secondary btn-sm w-100">
+                    <a href="{{ url_for('membres.list_membres') }}"
+                       class="btn btn-secondary btn-sm w-100">
                         <i class="bi bi-arrow-left"></i> Retour
                     </a>
                 </div>
@@ -45,7 +45,6 @@
     </div>
 
     <div class="col-md-8">
-        <!-- Cotisations -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white">
                 <i class="bi bi-cash-coin"></i> Cotisations
@@ -84,7 +83,6 @@
             </div>
         </div>
 
-        <!-- Présences aux entraînements -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-info text-white">
                 <i class="bi bi-calendar-check"></i> Assiduité aux entraînements
@@ -125,7 +123,7 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3" class="text-center text-muted">Aucune présence enregistrée</td>
+                            <td colspan="3" class="text-center text-muted">Aucune présence</td>
                         </tr>
                         {% endfor %}
                     </tbody>

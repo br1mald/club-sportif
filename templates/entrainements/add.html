@@ -11,7 +11,7 @@
                 <i class="bi bi-plus-circle"></i> Nouvel entraînement
             </div>
             <div class="card-body">
-                <form method="POST" action="/entrainements/ajouter">
+                <form method="POST" action="{{ url_for('entrainements.add') }}">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Équipe</label>
@@ -34,7 +34,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Durée (minutes)</label>
-                            <input type="number" name="duree" class="form-control" 
+                            <input type="number" name="duree" class="form-control"
                                    min="30" max="240" placeholder="90" required>
                         </div>
                         <div class="col-md-6">
@@ -43,7 +43,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Thème</label>
-                            <input type="text" name="theme" class="form-control" 
+                            <input type="text" name="theme" class="form-control"
                                    placeholder="Ex: Tactique offensive" required>
                         </div>
                     </div>
@@ -51,7 +51,8 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-lg"></i> Enregistrer
                         </button>
-                        <a href="/entrainements" class="btn btn-secondary">
+                        <a href="{{ url_for('entrainements.list_entrainements') }}"
+                           class="btn btn-secondary">
                             <i class="bi bi-x-lg"></i> Annuler
                         </a>
                     </div>

@@ -11,7 +11,7 @@
                 <i class="bi bi-pencil"></i> Modifier le membre
             </div>
             <div class="card-body">
-                <form method="POST" action="/membres/{{ membre.num_licence }}/modifier">
+                <form method="POST" action="{{ url_for('membres.edit', id=membre.num_licence) }}">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Nom</label>
@@ -60,7 +60,7 @@
                         <button type="submit" class="btn btn-warning">
                             <i class="bi bi-check-lg"></i> Enregistrer
                         </button>
-                        <a href="/membres/{{ membre.num_licence }}"
+                        <a href="{{ url_for('membres.fiche', id=membre.num_licence) }}"
                            class="btn btn-secondary">
                             <i class="bi bi-x-lg"></i> Annuler
                         </a>

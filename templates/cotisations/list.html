@@ -5,22 +5,16 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <form class="d-flex gap-2" method="GET" action="/cotisations">
+    <form class="d-flex gap-2" method="GET" action="{{ url_for('cotisations.list_cotisations') }}">
         <select name="statut" class="form-select" style="width: 180px;">
             <option value="">Tous les statuts</option>
-            <option value="payee" {% if statut_filtre == 'payee' %}selected{% endif %}>
-                Payées
-            </option>
-            <option value="impayee" {% if statut_filtre == 'impayee' %}selected{% endif %}>
-                Impayées
-            </option>
+            <option value="payee" {% if statut_filtre == 'payee' %}selected{% endif %}>Payées</option>
+            <option value="impayee" {% if statut_filtre == 'impayee' %}selected{% endif %}>Impayées</option>
         </select>
         <select name="saison" class="form-select" style="width: 180px;">
             <option value="">Toutes les saisons</option>
             {% for s in saisons %}
-                <option value="{{ s }}" {% if saison_filtre == s %}selected{% endif %}>
-                    {{ s }}
-                </option>
+                <option value="{{ s }}" {% if saison_filtre == s %}selected{% endif %}>{{ s }}</option>
             {% endfor %}
         </select>
         <button type="submit" class="btn btn-outline-primary">
@@ -29,11 +23,10 @@
     </form>
 </div>
 
-<!-- Alerte membres en retard -->
 {% if nb_impayees > 0 %}
 <div class="alert alert-danger">
     <i class="bi bi-exclamation-triangle"></i>
-    <strong>{{ nb_impayees }} membre(s)</strong> ont des cotisations impayées pour la saison en cours.
+    <strong>{{ nb_impayees }} membre(s)</strong> ont des cotisations impayées.
 </div>
 {% endif %}
 
@@ -66,7 +59,7 @@
                     </td>
                     <td>
                         {% if c.statut == 'impayee' %}
-                        <a href="/cotisations/{{ c.id_cotisation }}/payer"
+                        <a href="{{ url_for('cotisations.payer', id=c.id_cotisation) }}"
                            class="btn btn-sm btn-success">
                             <i class="bi bi-cash"></i> Payer
                         </a>
