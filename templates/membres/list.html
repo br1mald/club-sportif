@@ -57,15 +57,15 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ url_for('membres.fiche', id=membre.id) }}"
+                        <a href="{{ url_for('membres.fiche', id=membre.num_licence) }}"
                            class="btn btn-sm btn-info text-white" title="Voir fiche">
                             <i class="bi bi-eye"></i>
                         </a>
-                        <a href="{{ url_for('membres.edit', id=membre.id) }}"
+                        <a href="{{ url_for('membres.edit', id=membre.num_licence) }}"
                            class="btn btn-sm btn-warning" title="Modifier">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <form method="POST" action="{{ url_for('membres.delete', id=membre.id) }}"
+                        <form method="POST" action="{{ url_for('membres.delete', id=membre.num_licence) }}"
                               class="d-inline"
                               onsubmit="return confirm('Supprimer ce membre ?')">
                             <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
