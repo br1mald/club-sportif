@@ -1,9 +1,5 @@
-{% extends "base.html" %}
-
-{% block title %}Fiche membre{% endblock %}
-{% block page_title %}Fiche membre{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Fiche membre{% endblock %} {% block
+page_title %}Fiche membre{% endblock %} {% block content %}
 <div class="row">
     <div class="col-md-4">
         <div class="card shadow-sm mb-4">
@@ -12,31 +8,47 @@
             </div>
             <div class="card-body">
                 <div class="text-center mb-3">
-                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center
-                                justify-content-center text-white"
-                         style="width:80px; height:80px; font-size:2rem;">
+                    <div
+                        class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center text-white"
+                        style="width: 80px; height: 80px; font-size: 2rem"
+                    >
                         {{ membre.prenom[0] }}{{ membre.nom[0] }}
                     </div>
-                    <h5 class="mt-2 mb-0">{{ membre.nom }} {{ membre.prenom }}</h5>
-                    <small class="text-muted">Licence : {{ membre.num_licence }}</small>
+                    <h5 class="mt-2 mb-0">
+                        {{ membre.nom }} {{ membre.prenom }}
+                    </h5>
+                    <small class="text-muted"
+                        >Licence : {{ membre.num_licence }}</small
+                    >
                 </div>
-                <hr>
+                <hr />
                 <p><i class="bi bi-telephone"></i> {{ membre.telephone }}</p>
                 <p><i class="bi bi-envelope"></i> {{ membre.email }}</p>
-                <p><i class="bi bi-calendar"></i> Né(e) le {{ membre.date_naissance }}</p>
-                <p><i class="bi bi-calendar-check"></i> Adhésion : {{ membre.date_adhesion }}</p>
+                <p>
+                    <i class="bi bi-calendar"></i> Né(e) le {{
+                    membre.date_naissance }}
+                </p>
+                <p>
+                    <i class="bi bi-calendar-check"></i> Adhésion : {{
+                    membre.date_adhesion }}
+                </p>
                 {% if membre.equipe %}
-                <p><i class="bi bi-shield"></i>
+                <p>
+                    <i class="bi bi-shield"></i>
                     <span class="badge bg-primary">{{ membre.equipe }}</span>
                 </p>
                 {% endif %}
                 <div class="d-flex gap-2 mt-3">
-                    <a href="{{ url_for('membres.edit', id=membre.id) }}"
-                       class="btn btn-warning btn-sm w-100">
+                    <a
+                        href="{{ url_for('membres.edit', id=membre.num_licence) }}"
+                        class="btn btn-warning btn-sm w-100"
+                    >
                         <i class="bi bi-pencil"></i> Modifier
                     </a>
-                    <a href="{{ url_for('membres.list_membres') }}"
-                       class="btn btn-secondary btn-sm w-100">
+                    <a
+                        href="{{ url_for('membres.list_membres') }}"
+                        class="btn btn-secondary btn-sm w-100"
+                    >
                         <i class="bi bi-arrow-left"></i> Retour
                     </a>
                 </div>
@@ -67,15 +79,17 @@
                             <td>{{ c.date_paiement or '—' }}</td>
                             <td>
                                 {% if c.statut == 'payee' %}
-                                    <span class="badge bg-success">Payée</span>
+                                <span class="badge bg-success">Payée</span>
                                 {% else %}
-                                    <span class="badge bg-danger">Impayée</span>
+                                <span class="badge bg-danger">Impayée</span>
                                 {% endif %}
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="4" class="text-center text-muted">Aucune cotisation</td>
+                            <td colspan="4" class="text-center text-muted">
+                                Aucune cotisation
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -90,12 +104,17 @@
             <div class="card-body">
                 <div class="mb-2">
                     <strong>Taux d'assiduité : </strong>
-                    <span class="badge bg-{{ 'success' if taux_assiduite >= 75 else 'warning' if taux_assiduite >= 50 else 'danger' }}">
+                    <span
+                        class="badge bg-{{ 'success' if taux_assiduite >= 75 else 'warning' if taux_assiduite >= 50 else 'danger' }}"
+                    >
                         {{ taux_assiduite }}%
                     </span>
                 </div>
                 <div class="progress mb-3">
-                    <div class="progress-bar" style="width: {{ taux_assiduite }}%"></div>
+                    <div
+                        class="progress-bar"
+                        style="width: {{ taux_assiduite }}%"
+                    ></div>
                 </div>
                 <table class="table table-sm mb-0">
                     <thead class="table-light">
@@ -112,18 +131,21 @@
                             <td>{{ p.theme }}</td>
                             <td>
                                 {% if p.present %}
-                                    <span class="badge bg-success">Présent</span>
+                                <span class="badge bg-success">Présent</span>
                                 {% else %}
-                                    <span class="badge bg-danger">Absent</span>
-                                    {% if p.motif_absence %}
-                                        <small class="text-muted"> — {{ p.motif_absence }}</small>
-                                    {% endif %}
-                                {% endif %}
+                                <span class="badge bg-danger">Absent</span>
+                                {% if p.motif_absence %}
+                                <small class="text-muted">
+                                    — {{ p.motif_absence }}</small
+                                >
+                                {% endif %} {% endif %}
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3" class="text-center text-muted">Aucune présence</td>
+                            <td colspan="3" class="text-center text-muted">
+                                Aucune présence
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

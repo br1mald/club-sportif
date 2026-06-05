@@ -1,9 +1,5 @@
-{% extends "base.html" %}
-
-{% block title %}Modifier un membre{% endblock %}
-{% block page_title %}Modifier un membre{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Modifier un membre{% endblock %} {%
+block page_title %}Modifier un membre{% endblock %} {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow-sm">
@@ -11,47 +7,88 @@
                 <i class="bi bi-pencil"></i> Modifier le membre
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('membres.edit', id=membre.id) }}">
+                <form
+                    method="POST"
+                    action="{{ url_for('membres.edit', id=membre.num_licence) }}"
+                >
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Nom</label>
-                            <input type="text" name="nom" class="form-control"
-                                   value="{{ membre.nom }}" required>
+                            <input
+                                type="text"
+                                name="nom"
+                                class="form-control"
+                                value="{{ membre.nom }}"
+                                required
+                            />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Prénom</label>
-                            <input type="text" name="prenom" class="form-control"
-                                   value="{{ membre.prenom }}" required>
+                            <input
+                                type="text"
+                                name="prenom"
+                                class="form-control"
+                                value="{{ membre.prenom }}"
+                                required
+                            />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Date de naissance</label>
-                            <input type="date" name="date_naissance" class="form-control"
-                                   value="{{ membre.date_naissance }}" required>
+                            <input
+                                type="date"
+                                name="date_naissance"
+                                class="form-control"
+                                value="{{ membre.date_naissance }}"
+                                required
+                            />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Téléphone</label>
-                            <input type="tel" name="telephone" class="form-control"
-                                   value="{{ membre.telephone }}" required>
+                            <input
+                                type="tel"
+                                name="telephone"
+                                class="form-control"
+                                value="{{ membre.telephone }}"
+                                required
+                            />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Email</label>
-                            <input type="email" name="email" class="form-control"
-                                   value="{{ membre.email }}" required>
+                            <input
+                                type="email"
+                                name="email"
+                                class="form-control"
+                                value="{{ membre.email }}"
+                                required
+                            />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Date d'adhésion</label>
-                            <input type="date" name="date_adhesion" class="form-control"
-                                   value="{{ membre.date_adhesion }}" required>
+                            <input
+                                type="date"
+                                name="date_adhesion"
+                                class="form-control"
+                                value="{{ membre.date_adhesion }}"
+                                required
+                            />
                         </div>
                         <div class="col-md-12">
                             <label class="form-label">Équipe</label>
                             <select name="code_equipe" class="form-select">
                                 <option value="">-- Aucune équipe --</option>
                                 {% for equipe in equipes %}
-                                    <option value="{{ equipe.code_equipe }}"
-                                        {% if equipe.code_equipe == membre.code_equipe %}selected{% endif %}>
-                                        {{ equipe.nom }} ({{ equipe.categorie }})
-                                    </option>
+                                <option
+                                    value="{{ equipe.code_equipe }}"
+                                    {%
+                                    if
+                                    equipe.code_equipe=""
+                                    ="membre.code_equipe"
+                                    %}selected{%
+                                    endif
+                                    %}
+                                >
+                                    {{ equipe.nom }} ({{ equipe.categorie }})
+                                </option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -60,8 +97,10 @@
                         <button type="submit" class="btn btn-warning">
                             <i class="bi bi-check-lg"></i> Enregistrer
                         </button>
-                        <a href="{{ url_for('membres.fiche', id=membre.id) }}"
-                           class="btn btn-secondary">
+                        <a
+                            href="{{ url_for('membres.fiche', id=membre.num_licence) }}"
+                            class="btn btn-secondary"
+                        >
                             <i class="bi bi-x-lg"></i> Annuler
                         </a>
                     </div>
