@@ -77,7 +77,7 @@ def add():
     return render_template("entrainements/add.html", equipes=equipes)
 
 
-@entrainements_bp.route("/<id>/presences", methods=["GET", "POST"])
+@entrainements_bp.route("/<int:id>/presences", methods=["GET", "POST"])
 def presence(id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -109,8 +109,8 @@ def presence(id: int):
                     motif,
                 ),
             )  # type: ignore
-        cursor.close()
         db.commit()
+        cursor.close()
         flash("Presences enregistrées avec succès", "success")
         return redirect(url_for("entrainements.list_entrainements"))
 
