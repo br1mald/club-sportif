@@ -36,7 +36,7 @@ def list_membres():
     cursor.execute(query, params)
     membres = cursor.fetchall()
 
-    cursor.execute("SELECT code, nom FROM Equipe")
+    cursor.execute("SELECT code AS code_equipe, nom FROM Equipe")
     equipes = cursor.fetchall()
 
     cursor.close()
@@ -56,7 +56,10 @@ def fiche(id: int):
     cursor = db.cursor(dictionary=True)
     cursor.execute(
         """
-            SELECT * FROM Membre WHERE num_licence = %s
+            SELECT m.*, e.nom AS equipe FROM Membre m
+            LEFT JOIN Appartenance a ON m.num_licence = a.membre_id AND a.date_sortie IS NULL
+            LEFT JOIN Equipe e on a.equipe_id = e.code
+            WHERE m.num_licence = %s
         """,
         (id,),
     )
@@ -112,7 +115,7 @@ def fiche(id: int):
 @membres_bp.route("/ajouter", methods=["GET", "POST"])
 def add():
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
 
     if request.method == "POST":
         cursor.execute(
@@ -141,11 +144,11 @@ def add():
 
         db.commit()
         cursor.close()
-        flash("Membre ajouté avec succès")
+        flash("Membre ajouté avec succès", "success")
         return redirect(url_for("membres.list_membres"))
 
     cursor.execute("""
-            SELECT e.nom, e.categorie, e.code FROM Equipe e
+            SELECT e.nom, e.categorie, e.code AS code_equipe FROM Equipe e
         """)
     equipes = cursor.fetchall()
 
@@ -161,7 +164,7 @@ def edit(id: int):
         cursor.execute(
             """
                 UPDATE Membre SET
-                nom = %s, prenom = %s, telephone = %s, email = %s
+                nom = %s, prenom = %s, telephone = %s, email = %s, date_naissance = %s, date_adhesion = %s
                 WHERE num_licence = %s
             """,
             (
@@ -169,6 +172,8 @@ def edit(id: int):
                 request.form["prenom"],
                 request.form["telephone"],
                 request.form["email"],
+                request.form["date_naissance"],
+                request.form["date_adhesion"],
                 id,
             ),
         )
@@ -209,23 +214,29 @@ def edit(id: int):
         db.commit()
         cursor.close()
 
-        flash("Membre modifié avec succès")
+        flash("Membre modifié avec succès", "success")
         return redirect(url_for("membres.fiche", id=id))
 
-    cursor.execute("SELECT * FROM Membre WHERE num_licence = %s", (id,))
+    cursor.execute(
+        """SELECT m.*, a.equipe_id AS code_equipe
+        FROM Membre m
+        LEFT JOIN Appartenance a ON m.num_licence = a.membre_id AND a.date_sortie IS NULL
+        WHERE num_licence = %s""",
+        (id,),
+    )
     membre = cursor.fetchone()
 
     if not membre:
         abort(404)
 
     cursor.execute("""
-            SELECT e.nom, e.categorie FROM Equipe e
+            SELECT e.nom, e.code AS code_equipe, e.categorie FROM Equipe e
         """)
 
     equipes = cursor.fetchall()
 
     cursor.close()
-    return render_template("membres/edit.html", membre=membre, equipes=equipes)
+    return render_template("membres/modifier.html", membre=membre, equipes=equipes)
 
 
 @membres_bp.route("/<int:id>/supprimer", methods=["POST"])
@@ -237,5 +248,5 @@ def delete(id: int):
     db.commit()
     cursor.close()
 
-    flash("Membre supprimé avec succès")
+    flash("Membre supprimé avec succès", "success")
     return redirect(url_for("membres.list_membres"))
