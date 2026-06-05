@@ -209,6 +209,15 @@ def edit(id: int):
                     """,
                     (id, request.form["code_equipe"]),
                 )
+            else:
+                cursor.execute(
+                    """
+                        UPDATE Appartenance SET
+                        date_sortie = CURDATE()
+                        WHERE membre_id = %s AND date_sortie IS NULL
+                    """,
+                    (id,),
+                )
 
         db.commit()
         cursor.close()
