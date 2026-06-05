@@ -6,7 +6,6 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <!-- Infos du membre -->
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-info text-white">
                 <i class="bi bi-person-badge"></i> Informations
@@ -23,9 +22,7 @@
                     </div>
                     <div class="col-6 mt-3">
                         <strong>Montant dû :</strong><br>
-                        <span class="text-danger fw-bold fs-5">
-                            {{ cotisation.montant }} FCFA
-                        </span>
+                        <span class="text-danger fw-bold fs-5">{{ cotisation.montant }} FCFA</span>
                     </div>
                     <div class="col-6 mt-3">
                         <strong>Statut actuel :</strong><br>
@@ -35,23 +32,19 @@
             </div>
         </div>
 
-        <!-- Formulaire paiement -->
         <div class="card shadow-sm">
             <div class="card-header bg-success text-white">
                 <i class="bi bi-cash-coin"></i> Confirmer le paiement
             </div>
             <div class="card-body">
-                <form method="POST" 
-                      action="/cotisations/{{ cotisation.id_cotisation }}/payer">
+                <form method="POST" action="{{ url_for('cotisations.payer', id=cotisation.id_cotisation) }}">
                     <div class="mb-3">
                         <label class="form-label">Date de paiement</label>
-                        <input type="date" name="date_paiement" 
-                               class="form-control" required>
+                        <input type="date" name="date_paiement" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Montant reçu (FCFA)</label>
-                        <input type="number" name="montant" 
-                               class="form-control"
+                        <input type="number" name="montant" class="form-control"
                                value="{{ cotisation.montant }}" required>
                     </div>
                     <div class="alert alert-warning">
@@ -60,9 +53,10 @@
                     </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-success w-100">
-                            <i class="bi bi-check-lg"></i> Confirmer le paiement
+                            <i class="bi bi-check-lg"></i> Confirmer
                         </button>
-                        <a href="/cotisations" class="btn btn-secondary w-100">
+                        <a href="{{ url_for('cotisations.list_cotisations') }}"
+                           class="btn btn-secondary w-100">
                             <i class="bi bi-x-lg"></i> Annuler
                         </a>
                     </div>
