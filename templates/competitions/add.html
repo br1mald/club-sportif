@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter une compétition{% endblock %}
+{% block page_title %}Ajouter une compétition{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-plus-circle"></i> Nouvelle compétition
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/competitions/ajouter">
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Nom de la compétition</label>
+                            <input type="text" name="nom" class="form-control"
+                                   placeholder="Ex: Championnat régional 2026" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Sport</label>
+                            <select name="id_sport" class="form-select" required>
+                                <option value="">-- Choisir un sport --</option>
+                                {% for sport in sports %}
+                                    <option value="{{ sport.id_sport }}">
+                                        {{ sport.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Type</label>
+                            <select name="type" class="form-select" required>
+                                <option value="">-- Choisir un type --</option>
+                                <option value="championnat">Championnat</option>
+                                <option value="coupe">Coupe</option>
+                                <option value="amical">Amical</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Lieu</label>
+                            <input type="text" name="lieu" class="form-control" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Équipes participantes</label>
+                            <div class="row">
+                                {% for equipe in equipes %}
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                               name="equipes" value="{{ equipe.code_equipe }}">
+                                        <label class="form-check-label">
+                                            {{ equipe.nom }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Enregistrer
+                        </button>
+                        <a href="/competitions" class="btn btn-secondary">
+                            <i class="bi bi-x-lg"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
