@@ -13,7 +13,7 @@ def list_competitions():
     query = """
             SELECT c.nom, c.date, c.lieu, c.type, c.id AS id_competition, s.nom AS sport, (
                 SELECT COUNT(*) FROM Participation p WHERE p.competition_id = c.id
-            )
+            ) AS nb_participants
             FROM Competition c
             JOIN Sport s ON c.sport_id = s.id
             WHERE 1 = 1
