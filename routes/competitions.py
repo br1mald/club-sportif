@@ -62,6 +62,28 @@ def add():
         equipes = request.form.getlist("equipes")
 
         for equipe in equipes:
+            if request.form["type"] in ("championnat", "coupe"):
+                cursor.execute(
+                    """
+                        SELECT m.nom, m.prenom
+                        FROM Membre m
+                        JOIN Appartenir a ON a.Num_Licence = m.num_licence
+                        JOIN Cotisation c ON c.num_licence = m.num_licence
+                        WHERE a.equipe_id = %s AND a.date_sortie IS NULL
+                        AND c.statut = 'impayee'
+                    """,
+                    (equipe,),
+                )
+                impayees = cursor.fetchall()
+
+                if impayees:
+                    noms = ", ".join(f"{m['prenom']} {m['nom']}" for m in impayees)  # type: ignore
+                    flash(
+                        f"Équipe {equipe} bloquée - cotisations impayées: {noms}",
+                        "danger",
+                    )
+                    continue
+
             cursor.execute(
                 """
                 INSERT INTO Participation (equipe_id, competition_id)

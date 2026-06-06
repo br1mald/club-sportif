@@ -1,3 +1,5 @@
+from datetime import date, datetime
+
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from db import get_db
@@ -132,13 +134,55 @@ def add():
             ),
         )
 
-        if request.form.get("code_equipe"):
+        membre_id = cursor.lastrowid
+
+        code_equipe = request.form.get("code_equipe")
+        if code_equipe:
+            cursor.execute(
+                "SELECT categorie FROM Equipe WHERE code = %s", (code_equipe,)
+            )
+            equipe = cursor.fetchone()
+
+            date_of_birth = datetime.strptime(
+                request.form["date_naissance"], "%Y-%m-%d"
+            ).date()
+
+            age = (date.today() - date_of_birth).days // 365
+
+            if equipe["categorie"] == "senior" and age < 16:  # type: ignore
+                db.rollback()
+                flash(
+                    "Le membre doit avoir au moins 16 ans pour rejoindre une équipe senior",
+                    "danger",
+                )
+                return redirect(request.url)
+
+            cursor.execute(
+                """
+                    SELECT e.nom
+                    FROM Appartenance a
+                    JOIN Equipe e ON e.code = a.equipe_id
+                    WHERE a.membre_id = %s AND a.date_sortie IS NULL
+                    AND e.sport_id = (SELECT sport_id FROM Equipe WHERE code = %s)
+                """,
+                (membre_id, code_equipe),
+            )
+
+            existing = cursor.fetchone()
+            if existing:
+                db.rollback()
+                flash(
+                    f"Ce membre appartient déjà à {existing['nom']} dans ce sport",  # type: ignore
+                    "danger",
+                )
+                return redirect(request.url)
+
             cursor.execute(
                 """
                     INSERT INTO Appartenance (membre_id, equipe_id, date_adhesion)
                     VALUES (%s, %s, CURDATE())
                 """,
-                (cursor.lastrowid, request.form["code_equipe"]),
+                (membre_id, request.form["code_equipe"]),
             )
 
         db.commit()
@@ -188,7 +232,46 @@ def edit(id: int):
         )
 
         current_team = cursor.fetchone()
-        if request.form.get("code_equipe"):
+        code_equipe = request.form.get("code_equipe")
+        if code_equipe:
+            cursor.execute(
+                "SELECT categorie FROM Equipe WHERE code = %s", (code_equipe,)
+            )
+            equipe = cursor.fetchone()
+
+            date_of_birth = datetime.strptime(
+                request.form["date_naissance"], "%Y-%m-%d"
+            ).date()
+
+            age = (date.today() - date_of_birth).days // 365
+
+            if equipe["categorie"] == "senior" and age < 16:  # type: ignore
+                db.rollback()
+                flash(
+                    "Le membre doit avoir au moins 16 ans pour rejoindre une équipe senior",
+                    "danger",
+                )
+                return redirect(request.url)
+
+            cursor.execute(
+                """
+                    SELECT e.nom
+                    FROM Appartenance a
+                    JOIN Equipe e ON e.code = a.equipe_id
+                    WHERE a.membre_id = %s AND a.date_sortie IS NULL
+                    AND e.sport_id = (SELECT sport_id FROM Equipe WHERE code = %s)
+                """,
+                (id, code_equipe),
+            )
+
+            existing = cursor.fetchone()
+            if existing:
+                db.rollback()
+                flash(
+                    f"Ce membre appartient déjà à {existing['nom']} dans ce sport",  # type: ignore
+                    "danger",
+                )
+                return redirect(request.url)
             if not current_team:
                 cursor.execute(
                     "INSERT INTO Appartenance (membre_id, equipe_id, date_adhesion) VALUES (%s, %s, CURDATE())",
