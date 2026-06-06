@@ -1,5 +1,3 @@
-from types import coroutine
-
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from db import get_db
