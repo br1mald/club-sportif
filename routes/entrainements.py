@@ -101,6 +101,7 @@ def presence(id: int):
                 """
                     INSERT INTO Presence (membre_id, entrainement_id, present, motif_absence)
                     VALUES (%s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE present = VALUES(present), motif_absence = VALUES(motif_absence)
                 """,
                 (
                     m["membre_id"],  # type: ignore
@@ -116,7 +117,7 @@ def presence(id: int):
 
     cursor.execute(
         """
-            SELECT en.date, en.theme, en.lieu, e.nom AS equipe
+            SELECT en.id, en.date, en.theme, en.lieu, e.nom AS equipe
             FROM Entrainement en
             JOIN Equipe e ON en.equipe_id = e.code
             WHERE en.id = %s
