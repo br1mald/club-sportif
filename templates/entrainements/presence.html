@@ -77,12 +77,7 @@ block page_title %}Feuille de présence{% endblock %} {% block content %}
                                     class="form-check-input"
                                     type="checkbox"
                                     name="present_{{ membre.num_licence }}"
-                                    {%
-                                    if
-                                    membre.present
-                                    %}checked{%
-                                    endif
-                                    %}
+                                    {% if membre.present %}checked{% endif %}
                                 />
                             </div>
                         </td>
