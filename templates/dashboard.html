@@ -71,9 +71,9 @@
                     <tbody>
                         {% for m in membres_impayees %}
                         <tr>
-                            <td>{{ m.nom }} {{ m.prenom }}</td>
-                            <td>{{ m.saison }}</td>
-                            <td>{{ m.montant }} FCFA</td>
+                            <td>{{ m.Nom }} {{ m.Prenom }}</td>
+                            <td>{{ m.Saison }}</td>
+                            <td>{{ m.Montant }} FCFA</td>
                         </tr>
                         {% else %}
                         <tr>
@@ -107,11 +107,11 @@
                     <tbody>
                         {% for c in prochaines_competitions %}
                         <tr>
-                            <td>{{ c.nom }}</td>
-                            <td>{{ c.date }}</td>
-                            <td>{{ c.lieu }}</td>
+                            <td>{{ c.Nom }}</td>
+                            <td>{{ c.Date }}</td>
+                            <td>{{ c.Lieu }}</td>
                             <td>
-                                <span class="badge bg-info">{{ c.type }}</span>
+                                <span class="badge bg-info">{{ c.Type }}</span>
                             </td>
                         </tr>
                         {% else %}
@@ -145,11 +145,11 @@
                     <tbody>
                         {% for m in meilleurs_assidus %}
                         <tr>
-                            <td>{{ m.nom }} {{ m.prenom }}</td>
+                            <td>{{ m.Nom }} {{ m.Prenom }}</td>
                             <td>{{ m.equipe }}</td>
                             <td>
                                 <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar bg-success" 
+                                    <div class="progress-bar bg-success"
                                          style="width: {{ m.taux }}%">
                                         {{ m.taux }}%
                                     </div>

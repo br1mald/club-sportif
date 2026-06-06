@@ -14,15 +14,15 @@
                 <div class="row">
                     <div class="col-6">
                         <strong>Membre :</strong><br>
-                        {{ cotisation.nom }} {{ cotisation.prenom }}
+                        {{ cotisation.Nom }} {{ cotisation.Prenom }}
                     </div>
                     <div class="col-6">
                         <strong>Saison :</strong><br>
-                        {{ cotisation.saison }}
+                        {{ cotisation.Saison }}
                     </div>
                     <div class="col-6 mt-3">
                         <strong>Montant dû :</strong><br>
-                        <span class="text-danger fw-bold fs-5">{{ cotisation.montant }} FCFA</span>
+                        <span class="text-danger fw-bold fs-5">{{ cotisation.Montant }} FCFA</span>
                     </div>
                     <div class="col-6 mt-3">
                         <strong>Statut actuel :</strong><br>
@@ -45,7 +45,7 @@
                     <div class="mb-3">
                         <label class="form-label">Montant reçu (FCFA)</label>
                         <input type="number" name="montant" class="form-control"
-                               value="{{ cotisation.montant }}" required>
+                               value="{{ cotisation.Montant }}" required>
                     </div>
                     <div class="alert alert-warning">
                         <i class="bi bi-info-circle"></i>

@@ -9,21 +9,21 @@
         <div class="row">
             <div class="col-md-3">
                 <strong><i class="bi bi-trophy"></i> Compétition :</strong><br>
-                {{ competition.nom }}
+                {{ competition.Nom }}
             </div>
             <div class="col-md-3">
                 <strong><i class="bi bi-calendar"></i> Date :</strong><br>
-                {{ competition.date }}
+                {{ competition.Date }}
             </div>
             <div class="col-md-3">
                 <strong><i class="bi bi-geo-alt"></i> Lieu :</strong><br>
-                {{ competition.lieu }}
+                {{ competition.Lieu }}
             </div>
             <div class="col-md-3">
                 <strong><i class="bi bi-tag"></i> Type :</strong><br>
-                {% if competition.type == 'championnat' %}
+                {% if competition.Type == 'championnat' %}
                     <span class="badge bg-danger">Championnat</span>
-                {% elif competition.type == 'coupe' %}
+                {% elif competition.Type == 'coupe' %}
                     <span class="badge bg-warning">Coupe</span>
                 {% else %}
                     <span class="badge bg-info">Amical</span>
@@ -44,7 +44,6 @@
                     <tr>
                         <th>Équipe</th>
                         <th>Résultat / Score</th>
-                        <th>Classement</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,24 +53,19 @@
                         <td>
                             <input type="text" class="form-control form-control-sm"
                                    name="resultat_{{ p.code_equipe }}"
-                                   value="{{ p.resultat or '' }}"
+                                   value="{{ p.Resultat or '' }}"
                                    placeholder="Ex: 2-1">
-                        </td>
-                        <td>
-                            <input type="number" class="form-control form-control-sm"
-                                   name="classement_{{ p.code_equipe }}"
-                                   value="{{ p.classement or '' }}"
-                                   placeholder="1, 2...">
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="3" class="text-center text-muted py-4">
+                        <td colspan="2" class="text-center text-muted py-4">
                             Aucune équipe inscrite
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
+
             </table>
             <div class="p-3">
                 <button type="submit" class="btn btn-success">

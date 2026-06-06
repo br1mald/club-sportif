@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, render_template
 
 from db import get_db
 
@@ -10,12 +10,11 @@ def index():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute(" SELECT COUNT(*) AS total_membres FROM Membre ")
-
+    cursor.execute("SELECT COUNT(*) AS total_membres FROM Membre")
     total_membres = cursor.fetchone()["total_membres"]  # type: ignore
 
     cursor.execute(
-        "SELECT COUNT(*) AS cotisations_impayees FROM Cotisation WHERE statut = 'impayee'"
+        "SELECT COUNT(*) AS cotisations_impayees FROM Cotisation WHERE Statut = 'impayee'"
     )
     cotisations_impayees = cursor.fetchone()["cotisations_impayees"]  # type: ignore
 
@@ -23,7 +22,7 @@ def index():
     total_equipes = cursor.fetchone()["total_equipes"]  # type: ignore
 
     cursor.execute(
-        "SELECT COUNT(*) AS prochaines_competitions FROM Competition WHERE date >= CURDATE()"
+        "SELECT COUNT(*) AS prochaines_competitions FROM Competition WHERE Date >= CURDATE()"
     )
     prochaines_competitions_count = cursor.fetchone()["prochaines_competitions"]  # type: ignore
 
@@ -35,33 +34,33 @@ def index():
     }
 
     cursor.execute("""
-            SELECT m.nom, m.prenom, c.montant, c.saison
+            SELECT m.Nom, m.Prenom, c.Montant, c.Saison
             FROM Cotisation c
-            JOIN Membre m ON c.membre_id = m.num_licence
-            Where c.statut = 'impayee'
-            ORDER BY saison DESC
+            JOIN Membre m ON c.Num_Licence = m.Num_Licence
+            WHERE c.Statut = 'impayee'
+            ORDER BY c.Saison DESC
         """)
 
     membres_impayees = cursor.fetchall()
 
     cursor.execute("""
-            SELECT nom, date, lieu, type
+            SELECT Nom, Date, Lieu, Type
             FROM Competition
-            WHERE date >= CURDATE()
-            ORDER BY date ASC
+            WHERE Date >= CURDATE()
+            ORDER BY Date ASC
         """)
 
     prochaines_competitions = cursor.fetchall()
 
     cursor.execute("""
-            SELECT m.nom, m.prenom, e.nom AS equipe,
-            ROUND(COUNT(CASE WHEN p.present = 1 THEN 1 END) * 100.0 / COUNT(*)) AS taux
+            SELECT m.Nom, m.Prenom, e.Nom_Equipe AS equipe,
+            ROUND(COUNT(CASE WHEN p.Present = 1 THEN 1 END) * 100.0 / COUNT(*)) AS taux
             FROM Presence p
-            JOIN Membre m ON p.membre_id = m.num_licence
-            JOIN Entrainement en ON p.entrainement_id = en.id
-            JOIN Appartenance a ON a.membre_id = m.num_licence AND en.equipe_id = a.equipe_id AND a.date_sortie IS NULL
-            JOIN Equipe e ON e.code = a.equipe_id
-            GROUP BY m.num_licence, e.code
+            JOIN Membre m ON p.Num_Licence = m.Num_Licence
+            JOIN Entrainement en ON p.Entrain_ID = en.Entrain_ID
+            JOIN Appartenir a ON a.Num_Licence = m.Num_Licence AND en.Code_Equipe = a.Code_Equipe AND a.Date_Sortie IS NULL
+            JOIN Equipe e ON e.Code_Equipe = a.Code_Equipe
+            GROUP BY m.Num_Licence, e.Code_Equipe
             ORDER BY taux DESC
             LIMIT 5
         """)

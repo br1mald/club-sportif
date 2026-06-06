@@ -46,19 +46,19 @@
             <tbody>
                 {% for c in cotisations %}
                 <tr>
-                    <td><strong>{{ c.nom }} {{ c.prenom }}</strong></td>
-                    <td>{{ c.saison }}</td>
-                    <td>{{ c.montant }} FCFA</td>
-                    <td>{{ c.date_paiement or '—' }}</td>
+                    <td><strong>{{ c.Nom }} {{ c.Prenom }}</strong></td>
+                    <td>{{ c.Saison }}</td>
+                    <td>{{ c.Montant }} FCFA</td>
+                    <td>{{ c.Date_Paiement or '—' }}</td>
                     <td>
-                        {% if c.statut == 'payee' %}
+                        {% if c.Statut == 'payee' %}
                             <span class="badge bg-success">Payée</span>
                         {% else %}
                             <span class="badge bg-danger">Impayée</span>
                         {% endif %}
                     </td>
                     <td>
-                        {% if c.statut == 'impayee' %}
+                        {% if c.Statut == 'impayee' %}
                         <a href="{{ url_for('cotisations.payer', id=c.id_cotisation) }}"
                            class="btn btn-sm btn-success">
                             <i class="bi bi-cash"></i> Payer

@@ -14,19 +14,19 @@ def list_cotisations():
     saison_filtre = request.args.get("saison")
 
     query = """
-        SELECT m.nom, m.prenom, c.saison, c.montant, c.date_paiement, c.statut, c.id_cotisation
+        SELECT m.Nom, m.Prenom, c.Saison, c.Montant, c.Date_Paiement, c.Statut, c.Cotis_ID AS id_cotisation
         FROM Cotisation c
-        JOIN Membre m ON c.membre_id = m.num_licence
+        JOIN Membre m ON c.Num_Licence = m.Num_Licence
         WHERE 1 = 1
     """
 
     params = []
 
     if statut_filtre:
-        query += " AND statut = %s"
+        query += " AND c.Statut = %s"
         params.append(statut_filtre)
     if saison_filtre:
-        query += " AND saison = %s"
+        query += " AND c.Saison = %s"
         params.append(saison_filtre)
 
     cursor.execute(query, params)
@@ -34,15 +34,15 @@ def list_cotisations():
     cotisations = cursor.fetchall()
 
     cursor.execute("""
-            SELECT DISTINCT saison
-            FROM Cotisation ORDER BY saison DESC
+            SELECT DISTINCT Saison
+            FROM Cotisation ORDER BY Saison DESC
         """)
 
-    saisons = [row["saison"] for row in cursor.fetchall()]  # type: ignore
+    saisons = [row["Saison"] for row in cursor.fetchall()]  # type: ignore
 
     cursor.execute("""
             SELECT COUNT(*) AS total
-            FROM Cotisation WHERE statut = 'impayee'
+            FROM Cotisation WHERE Statut = 'impayee'
         """)
 
     nb_impayees = cursor.fetchone()["total"]  # type: ignore
@@ -64,8 +64,8 @@ def payer(id: int):
         cursor.execute(
             """
                 UPDATE Cotisation
-                SET statut = 'payee', date_paiement = %s, montant = %s
-                WHERE id_cotisation = %s
+                SET Statut = 'payee', Date_Paiement = %s, Montant = %s
+                WHERE Cotis_ID = %s
             """,
             (
                 request.form["date_paiement"],
@@ -82,10 +82,10 @@ def payer(id: int):
 
     cursor.execute(
         """
-            SELECT m.prenom, m.nom, c.saison, c.montant, c.id_cotisation
+            SELECT m.Prenom, m.Nom, c.Saison, c.Montant, c.Cotis_ID AS id_cotisation
             FROM Cotisation c
-            JOIN Membre m ON c.membre_id = m.num_licence
-            WHERE c.id_cotisation = %s
+            JOIN Membre m ON c.Num_Licence = m.Num_Licence
+            WHERE c.Cotis_ID = %s
         """,
         (id,),
     )

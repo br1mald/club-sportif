@@ -16,29 +16,27 @@ def list_membres():
     equipe_filtre = request.args.get("equipe")
 
     query = """
-            SELECT m.*, e.nom AS equipe
+            SELECT m.*, e.Nom_Equipe AS equipe
             FROM Membre m
-            LEFT JOIN Appartenance a ON m.num_licence = a.membre_id AND a.date_sortie IS NULL
-            LEFT JOIN Equipe e ON a.equipe_id = e.code
+            LEFT JOIN Appartenir a ON m.Num_Licence = a.Num_Licence AND a.Date_Sortie IS NULL
+            LEFT JOIN Equipe e ON a.Code_Equipe = e.Code_Equipe
             WHERE 1 = 1
         """
-    # a.date_sortie IS NULL parce qu'on veut l'équipe actuelle, pas les équipes précédentes si il y en a
-    # double join parce que le membre n'a pas directement accès à son équipe
 
     params = []
 
     if recherche:
-        query += " AND (m.nom LIKE %s OR m.prenom LIKE %s)"
+        query += " AND (m.Nom LIKE %s OR m.Prenom LIKE %s)"
         params.extend([f"%{recherche}%", f"%{recherche}%"])
 
     if equipe_filtre:
-        query += " AND e.code = %s"
+        query += " AND e.Code_Equipe = %s"
         params.append(equipe_filtre)
 
     cursor.execute(query, params)
     membres = cursor.fetchall()
 
-    cursor.execute("SELECT code AS code_equipe, nom FROM Equipe")
+    cursor.execute("SELECT Code_Equipe AS code_equipe, Nom_Equipe FROM Equipe")
     equipes = cursor.fetchall()
 
     cursor.close()
@@ -52,16 +50,16 @@ def list_membres():
     )
 
 
-@membres_bp.route("/<int:id>", methods=["GET"])
-def fiche(id: int):
+@membres_bp.route("/<id>", methods=["GET"])
+def fiche(id: str):
     db = get_db()
     cursor = db.cursor(dictionary=True)
     cursor.execute(
         """
-            SELECT m.*, e.nom AS equipe FROM Membre m
-            LEFT JOIN Appartenance a ON m.num_licence = a.membre_id AND a.date_sortie IS NULL
-            LEFT JOIN Equipe e on a.equipe_id = e.code
-            WHERE m.num_licence = %s
+            SELECT m.*, e.Nom_Equipe AS equipe FROM Membre m
+            LEFT JOIN Appartenir a ON m.Num_Licence = a.Num_Licence AND a.Date_Sortie IS NULL
+            LEFT JOIN Equipe e ON a.Code_Equipe = e.Code_Equipe
+            WHERE m.Num_Licence = %s
         """,
         (id,),
     )
@@ -72,31 +70,30 @@ def fiche(id: int):
 
     cursor.execute(
         """
-            SELECT COUNT(CASE WHEN p.present = 1 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0) AS taux
+            SELECT COUNT(CASE WHEN p.Present = 1 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0) AS taux
             FROM Presence p
-            JOIN Entrainement en ON p.entrainement_id = en.id
-            JOIN Appartenance a ON a.membre_id = p.membre_id
-            AND a.equipe_id = en.equipe_id
-            WHERE p.membre_id = %s
+            JOIN Entrainement en ON p.Entrain_ID = en.Entrain_ID
+            JOIN Appartenir a ON a.Num_Licence = p.Num_Licence
+            AND a.Code_Equipe = en.Code_Equipe
+            WHERE p.Num_Licence = %s
         """,
         (id,),
     )
-    # CASE p.present = 1 THEN 1 END ne comptabilise l'entrée que si le membre est présent (p.present = 1)
-    assiduite: dict | None = cursor.fetchone()  # type: ignore
-    taux_assiduite = int(assiduite["taux"]) if assiduite and assiduite["taux"] else 0
+    assiduite = cursor.fetchone()
+    taux_assiduite = int(assiduite["taux"]) if assiduite and assiduite["taux"] else 0  # type: ignore
 
     cursor.execute(
-        "SELECT * FROM Cotisation c WHERE membre_id = %s ORDER BY saison DESC", (id,)
+        "SELECT * FROM Cotisation WHERE Num_Licence = %s ORDER BY Saison DESC", (id,)
     )
     cotisations = cursor.fetchall()
 
     cursor.execute(
         """
-            SELECT en.date, en.theme, p.present, p.motif_absence
+            SELECT en.Date, en.Theme, p.Present, p.Motif_Absence
             FROM Presence p
-            JOIN Entrainement en ON p.entrainement_id = en.id
-            WHERE p.membre_id = %s
-            ORDER BY en.date DESC
+            JOIN Entrainement en ON p.Entrain_ID = en.Entrain_ID
+            WHERE p.Num_Licence = %s
+            ORDER BY en.Date DESC
         """,
         (id,),
     )
@@ -119,12 +116,21 @@ def add():
     cursor = db.cursor(dictionary=True)
 
     if request.method == "POST":
+        cursor.execute("SELECT MAX(Num_Licence) AS max_lic FROM Membre")
+        result = cursor.fetchone()
+        if result and result["max_lic"]:  # type: ignore
+            next_num = int(result["max_lic"][3:]) + 1  # type: ignore
+        else:
+            next_num = 1
+        num_licence = f"LIC{next_num:05d}"
+
         cursor.execute(
             """
-                INSERT INTO Membre (nom, prenom, date_naissance, telephone, email, date_adhesion)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO Membre (Num_Licence, Nom, Prenom, Date_Naissance, Telephone, Email, Date_Adhesion)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             (
+                num_licence,
                 request.form["nom"],
                 request.form["prenom"],
                 request.form["date_naissance"],
@@ -134,12 +140,10 @@ def add():
             ),
         )
 
-        membre_id = cursor.lastrowid
-
         code_equipe = request.form.get("code_equipe")
         if code_equipe:
             cursor.execute(
-                "SELECT categorie FROM Equipe WHERE code = %s", (code_equipe,)
+                "SELECT Categorie FROM Equipe WHERE Code_Equipe = %s", (code_equipe,)
             )
             equipe = cursor.fetchone()
 
@@ -149,7 +153,7 @@ def add():
 
             age = (date.today() - date_of_birth).days // 365
 
-            if equipe["categorie"] == "senior" and age < 16:  # type: ignore
+            if equipe["Categorie"] == "senior" and age < 16:  # type: ignore
                 db.rollback()
                 flash(
                     "Le membre doit avoir au moins 16 ans pour rejoindre une équipe senior",
@@ -159,30 +163,30 @@ def add():
 
             cursor.execute(
                 """
-                    SELECT e.nom
-                    FROM Appartenance a
-                    JOIN Equipe e ON e.code = a.equipe_id
-                    WHERE a.membre_id = %s AND a.date_sortie IS NULL
-                    AND e.sport_id = (SELECT sport_id FROM Equipe WHERE code = %s)
+                    SELECT e.Nom_Equipe
+                    FROM Appartenir a
+                    JOIN Equipe e ON e.Code_Equipe = a.Code_Equipe
+                    WHERE a.Num_Licence = %s AND a.Date_Sortie IS NULL
+                    AND e.Sport_ID = (SELECT Sport_ID FROM Equipe WHERE Code_Equipe = %s)
                 """,
-                (membre_id, code_equipe),
+                (num_licence, code_equipe),
             )
 
             existing = cursor.fetchone()
             if existing:
                 db.rollback()
                 flash(
-                    f"Ce membre appartient déjà à {existing['nom']} dans ce sport",  # type: ignore
+                    f"Ce membre appartient déjà à {existing['Nom_Equipe']} dans ce sport",  # type: ignore
                     "danger",
                 )
                 return redirect(request.url)
 
             cursor.execute(
                 """
-                    INSERT INTO Appartenance (membre_id, equipe_id, date_adhesion)
-                    VALUES (%s, %s, CURDATE())
+                    INSERT INTO Appartenir (Num_Licence, Code_Equipe, Date_Entree, Poste)
+                    VALUES (%s, %s, CURDATE(), %s)
                 """,
-                (membre_id, request.form["code_equipe"]),
+                (num_licence, code_equipe, request.form.get("poste", "Non défini")),
             )
 
         db.commit()
@@ -191,7 +195,7 @@ def add():
         return redirect(url_for("membres.list_membres"))
 
     cursor.execute("""
-            SELECT e.nom, e.categorie, e.code AS code_equipe FROM Equipe e
+            SELECT Nom_Equipe, Categorie, Code_Equipe AS code_equipe FROM Equipe
         """)
     equipes = cursor.fetchall()
 
@@ -200,8 +204,8 @@ def add():
     return render_template("membres/add.html", equipes=equipes)
 
 
-@membres_bp.route("/<int:id>/modifier", methods=["GET", "POST"])
-def edit(id: int):
+@membres_bp.route("/<id>/modifier", methods=["GET", "POST"])
+def edit(id: str):
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
@@ -209,8 +213,8 @@ def edit(id: int):
         cursor.execute(
             """
                 UPDATE Membre SET
-                nom = %s, prenom = %s, telephone = %s, email = %s, date_naissance = %s, date_adhesion = %s
-                WHERE num_licence = %s
+                Nom = %s, Prenom = %s, Telephone = %s, Email = %s, Date_Naissance = %s, Date_Adhesion = %s
+                WHERE Num_Licence = %s
             """,
             (
                 request.form["nom"],
@@ -225,8 +229,8 @@ def edit(id: int):
 
         cursor.execute(
             """
-                SELECT a.equipe_id FROM Appartenance a
-                WHERE a.membre_id = %s and a.date_sortie IS NULL
+                SELECT a.Code_Equipe FROM Appartenir a
+                WHERE a.Num_Licence = %s AND a.Date_Sortie IS NULL
             """,
             (id,),
         )
@@ -235,7 +239,7 @@ def edit(id: int):
         code_equipe = request.form.get("code_equipe")
         if code_equipe:
             cursor.execute(
-                "SELECT categorie FROM Equipe WHERE code = %s", (code_equipe,)
+                "SELECT Categorie FROM Equipe WHERE Code_Equipe = %s", (code_equipe,)
             )
             equipe = cursor.fetchone()
 
@@ -245,7 +249,7 @@ def edit(id: int):
 
             age = (date.today() - date_of_birth).days // 365
 
-            if equipe["categorie"] == "senior" and age < 16:  # type: ignore
+            if equipe["Categorie"] == "senior" and age < 16:  # type: ignore
                 db.rollback()
                 flash(
                     "Le membre doit avoir au moins 16 ans pour rejoindre une équipe senior",
@@ -255,11 +259,11 @@ def edit(id: int):
 
             cursor.execute(
                 """
-                    SELECT e.nom
-                    FROM Appartenance a
-                    JOIN Equipe e ON e.code = a.equipe_id
-                    WHERE a.membre_id = %s AND a.date_sortie IS NULL
-                    AND e.sport_id = (SELECT sport_id FROM Equipe WHERE code = %s)
+                    SELECT e.Nom_Equipe
+                    FROM Appartenir a
+                    JOIN Equipe e ON e.Code_Equipe = a.Code_Equipe
+                    WHERE a.Num_Licence = %s AND a.Date_Sortie IS NULL
+                    AND e.Sport_ID = (SELECT Sport_ID FROM Equipe WHERE Code_Equipe = %s)
                 """,
                 (id, code_equipe),
             )
@@ -268,38 +272,38 @@ def edit(id: int):
             if existing:
                 db.rollback()
                 flash(
-                    f"Ce membre appartient déjà à {existing['nom']} dans ce sport",  # type: ignore
+                    f"Ce membre appartient déjà à {existing['Nom_Equipe']} dans ce sport",  # type: ignore
                     "danger",
                 )
                 return redirect(request.url)
+
             if not current_team:
                 cursor.execute(
-                    "INSERT INTO Appartenance (membre_id, equipe_id, date_adhesion) VALUES (%s, %s, CURDATE())",
-                    (id, request.form["code_equipe"]),
+                    "INSERT INTO Appartenir (Num_Licence, Code_Equipe, Date_Entree, Poste) VALUES (%s, %s, CURDATE(), %s)",
+                    (id, code_equipe, request.form.get("poste", "Non défini")),
                 )
 
-            elif str(current_team["equipe_id"]) != request.form["code_equipe"]:  # type: ignore
+            elif current_team["Code_Equipe"] != code_equipe:  # type: ignore
                 cursor.execute(
                     """
-                        UPDATE Appartenance SET date_sortie = CURDATE()
-                        WHERE membre_id = %s AND date_sortie IS NULL
+                        UPDATE Appartenir SET Date_Sortie = CURDATE()
+                        WHERE Num_Licence = %s AND Date_Sortie IS NULL
                     """,
                     (id,),
                 )
 
                 cursor.execute(
                     """
-                        INSERT INTO Appartenance(membre_id, equipe_id, date_adhesion)
-                        VALUES (%s, %s, CURDATE())
+                        INSERT INTO Appartenir (Num_Licence, Code_Equipe, Date_Entree, Poste)
+                        VALUES (%s, %s, CURDATE(), %s)
                     """,
-                    (id, request.form["code_equipe"]),
+                    (id, code_equipe, request.form.get("poste", "Non défini")),
                 )
         else:
             cursor.execute(
                 """
-                    UPDATE Appartenance SET
-                    date_sortie = CURDATE()
-                    WHERE membre_id = %s AND date_sortie IS NULL
+                    UPDATE Appartenir SET Date_Sortie = CURDATE()
+                    WHERE Num_Licence = %s AND Date_Sortie IS NULL
                 """,
                 (id,),
             )
@@ -311,10 +315,10 @@ def edit(id: int):
         return redirect(url_for("membres.fiche", id=id))
 
     cursor.execute(
-        """SELECT m.*, a.equipe_id AS code_equipe
+        """SELECT m.*, a.Code_Equipe AS code_equipe
         FROM Membre m
-        LEFT JOIN Appartenance a ON m.num_licence = a.membre_id AND a.date_sortie IS NULL
-        WHERE m.num_licence = %s""",
+        LEFT JOIN Appartenir a ON m.Num_Licence = a.Num_Licence AND a.Date_Sortie IS NULL
+        WHERE m.Num_Licence = %s""",
         (id,),
     )
     membre = cursor.fetchone()
@@ -323,7 +327,7 @@ def edit(id: int):
         abort(404)
 
     cursor.execute("""
-            SELECT e.nom, e.code AS code_equipe, e.categorie FROM Equipe e
+            SELECT Nom_Equipe, Code_Equipe AS code_equipe, Categorie FROM Equipe
         """)
 
     equipes = cursor.fetchall()
@@ -332,12 +336,12 @@ def edit(id: int):
     return render_template("membres/modifier.html", membre=membre, equipes=equipes)
 
 
-@membres_bp.route("/<int:id>/supprimer", methods=["POST"])
-def delete(id: int):
+@membres_bp.route("/<id>/supprimer", methods=["POST"])
+def delete(id: str):
     db = get_db()
     cursor = db.cursor()
 
-    cursor.execute("DELETE FROM Membre WHERE num_licence = %s", (id,))
+    cursor.execute("DELETE FROM Membre WHERE Num_Licence = %s", (id,))
     db.commit()
     cursor.close()
 

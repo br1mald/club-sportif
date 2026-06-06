@@ -37,14 +37,14 @@
             <tbody>
                 {% for c in competitions %}
                 <tr>
-                    <td><strong>{{ c.nom }}</strong></td>
+                    <td><strong>{{ c.Nom }}</strong></td>
                     <td>{{ c.sport }}</td>
-                    <td>{{ c.date }}</td>
-                    <td>{{ c.lieu }}</td>
+                    <td>{{ c.Date }}</td>
+                    <td>{{ c.Lieu }}</td>
                     <td>
-                        {% if c.type == 'championnat' %}
+                        {% if c.Type == 'championnat' %}
                             <span class="badge bg-danger">Championnat</span>
-                        {% elif c.type == 'coupe' %}
+                        {% elif c.Type == 'coupe' %}
                             <span class="badge bg-warning">Coupe</span>
                         {% else %}
                             <span class="badge bg-info">Amical</span>
