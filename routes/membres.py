@@ -73,7 +73,7 @@ def fiche(id: str):
             SELECT COUNT(CASE WHEN p.Present = 1 THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0) AS taux
             FROM Presence p
             JOIN Entrainement en ON p.Entrain_ID = en.Entrain_ID
-            JOIN Appartenir a ON a. Num_Licence = p.Num_Licence
+            JOIN Appartenir a ON a.Num_Licence = p.Num_Licence
             AND a.Code_Equipe = en.Code_Equipe
             WHERE p.Num_Licence = %s
         """,

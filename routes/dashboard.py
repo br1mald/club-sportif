@@ -57,7 +57,7 @@ def index():
             ROUND(COUNT(CASE WHEN p.Present = 1 THEN 1 END) * 100.0 / COUNT(*)) AS taux
             FROM Presence p
             JOIN Membre m ON p.Num_Licence = m.Num_Licence
-            JOIN Entrainement en ON p.Entrain_ID = en. Entrain_ID
+            JOIN Entrainement en ON p.Entrain_ID = en.Entrain_ID
             JOIN Appartenir a ON a.Num_Licence = m.Num_Licence AND en.Code_Equipe = a.Code_Equipe AND a.Date_Sortie IS NULL
             JOIN Equipe e ON e.Code_Equipe = a.Code_Equipe
             GROUP BY m.Num_Licence, e.Code_Equipe

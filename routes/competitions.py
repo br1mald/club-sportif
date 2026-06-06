@@ -67,7 +67,6 @@ def add():
         )
 
         equipes = request.form.getlist("equipes")
-        print(equipes)
 
         for equipe in equipes:
             if request.form["type"] in ("championnat", "coupe"):

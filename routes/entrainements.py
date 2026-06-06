@@ -128,7 +128,7 @@ def presence(id: str):
 
     cursor.execute(
         """
-            SELECT en. Entrain_ID, en.Date, en.Theme, en.Lieu, e.Nom_Equipe AS equipe
+            SELECT en.Entrain_ID, en.Date, en.Theme, en.Lieu, e.Nom_Equipe AS equipe
             FROM Entrainement en
             JOIN Equipe e ON en.Code_Equipe = e.Code_Equipe
             WHERE en.Entrain_ID = %s

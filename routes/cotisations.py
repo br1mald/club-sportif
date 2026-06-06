@@ -14,7 +14,7 @@ def list_cotisations():
     saison_filtre = request.args.get("saison")
 
     query = """
-        SELECT m. Nom, m.Prenom, c.Saison, c.Montant, c.Date_Paiement, c.Statut, c.Cotis_ID AS id_cotisation
+        SELECT m.Nom, m.Prenom, c.Saison, c.Montant, c.Date_Paiement, c.Statut, c.Cotis_ID AS id_cotisation
         FROM Cotisation c
         JOIN Membre m ON c.Num_Licence = m.Num_Licence
         WHERE 1 = 1

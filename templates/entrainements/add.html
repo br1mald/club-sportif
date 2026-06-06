@@ -18,7 +18,7 @@
                             <select name="code_equipe" class="form-select" required>
                                 <option value="">-- Choisir une équipe --</option>
                                 {% for equipe in equipes %}
-                                    <option value="{{ equipe.Code_Equipe }}">
+                                    <option value="{{ equipe.code_equipe }}">
                                         {{ equipe.Nom_Equipe }} ({{ equipe.Categorie }})
                                     </option>
                                 {% endfor %}
