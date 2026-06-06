@@ -11,9 +11,9 @@ def list_entrainements():
     cursor = db.cursor(dictionary=True)
 
     query = """
-            SELECT en.*, e.nom AS equipe
+            SELECT en.*, e.Nom_Equipe AS equipe
             FROM Entrainement en
-            JOIN Equipe e ON en.equipe_id = e.code
+            JOIN Equipe e ON en.Code_Equipe = e.Code_Equipe
             WHERE 1 = 1
         """
 
@@ -22,14 +22,16 @@ def list_entrainements():
     equipe_filtre = request.args.get("equipe")
 
     if equipe_filtre:
-        query += " AND e.code = %s"
+        query += " AND e.Code_Equipe = %s"
         params.append(equipe_filtre)
 
     cursor.execute(query, params)
 
     entrainements = cursor.fetchall()
 
-    cursor.execute("SELECT nom, code AS code_equipe, categorie FROM Equipe")
+    cursor.execute(
+        "SELECT Nom_Equipe, Code_Equipe AS code_equipe, Categorie FROM Equipe"
+    )
     equipes = cursor.fetchall()
 
     cursor.close()
@@ -45,12 +47,21 @@ def add():
     cursor = db.cursor(dictionary=True)
 
     if request.method == "POST":
+        cursor.execute("SELECT MAX(Entrain_ID) AS max_id FROM Entrainement")
+        result = cursor.fetchone()
+        if result and result["max_id"]:  # type: ignore
+            next_num = int(result["max_id"][2:]) + 1  # type: ignore
+        else:
+            next_num = 1
+        entrain_id = f"EN{next_num:06d}"
+
         cursor.execute(
             """
-                INSERT INTO Entrainement (date, heure_debut, duree, lieu, theme, equipe_id)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO Entrainement (Entrain_ID, Date, Heure_Debut, Duree, Lieu, Theme, Code_Equipe)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             (
+                entrain_id,
                 request.form["date"],
                 request.form["heure_debut"],
                 request.form["duree"],
@@ -67,8 +78,8 @@ def add():
         return redirect(url_for("entrainements.list_entrainements"))
 
     cursor.execute("""
-            SELECT e.nom, e.categorie, e.code AS code_equipe
-            FROM Equipe e
+            SELECT Nom_Equipe, Categorie, Code_Equipe AS code_equipe
+            FROM Equipe
         """)
 
     equipes = cursor.fetchall()
@@ -77,17 +88,17 @@ def add():
     return render_template("entrainements/add.html", equipes=equipes)
 
 
-@entrainements_bp.route("/<int:id>/presences", methods=["GET", "POST"])
-def presence(id: int):
+@entrainements_bp.route("/<id>/presences", methods=["GET", "POST"])
+def presence(id: str):
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
     if request.method == "POST":
         cursor.execute(
             """
-                SELECT a.membre_id FROM Appartenance a
-                WHERE equipe_id = (SELECT equipe_id FROM Entrainement WHERE id = %s)
-                AND date_sortie IS NULL
+                SELECT a.Num_Licence FROM Appartenir a
+                WHERE Code_Equipe = (SELECT Code_Equipe FROM Entrainement WHERE Entrain_ID = %s)
+                AND Date_Sortie IS NULL
             """,
             (id,),
         )
@@ -95,32 +106,32 @@ def presence(id: int):
         membres = cursor.fetchall()
 
         for m in membres:
-            present = 1 if request.form.get(f"present_{m['membre_id']}") else 0  # type: ignore
-            motif = request.form.get(f"motif_{m['membre_id']}")  # type: ignore
+            present = 1 if request.form.get(f"present_{m['Num_Licence']}") else 0  # type: ignore
+            motif = request.form.get(f"motif_{m['Num_Licence']}")  # type: ignore
             cursor.execute(
                 """
-                    INSERT INTO Presence (membre_id, entrainement_id, present, motif_absence)
+                    INSERT INTO Presence (Num_Licence, Entrain_ID, Present, Motif_Absence)
                     VALUES (%s, %s, %s, %s)
-                    ON DUPLICATE KEY UPDATE present = VALUES(present), motif_absence = VALUES(motif_absence)
+                    ON DUPLICATE KEY UPDATE Present = VALUES(Present), Motif_Absence = VALUES(Motif_Absence)
                 """,
                 (
-                    m["membre_id"],  # type: ignore
+                    m["Num_Licence"],  # type: ignore
                     id,
                     present,
                     motif,
                 ),
-            )  # type: ignore
+            )
         db.commit()
         cursor.close()
-        flash("Presences enregistrées avec succès", "success")
+        flash("Présences enregistrées avec succès", "success")
         return redirect(url_for("entrainements.list_entrainements"))
 
     cursor.execute(
         """
-            SELECT en.id, en.date, en.theme, en.lieu, e.nom AS equipe
+            SELECT en. Entrain_ID, en.Date, en.Theme, en.Lieu, e.Nom_Equipe AS equipe
             FROM Entrainement en
-            JOIN Equipe e ON en.equipe_id = e.code
-            WHERE en.id = %s
+            JOIN Equipe e ON en.Code_Equipe = e.Code_Equipe
+            WHERE en.Entrain_ID = %s
         """,
         (id,),
     )
@@ -130,7 +141,7 @@ def presence(id: int):
     cursor.execute(
         """
             SELECT COUNT(*) AS presents FROM Presence
-            WHERE present = 1 AND entrainement_id = %s
+            WHERE Present = 1 AND Entrain_ID = %s
         """,
         (id,),
     )
@@ -139,9 +150,9 @@ def presence(id: int):
 
     cursor.execute(
         """
-            SELECT COUNT(*) AS total FROM Appartenance a
-            WHERE a.equipe_id = (SELECT en.equipe_id FROM Entrainement en WHERE id = %s)
-            AND date_sortie IS NULL
+            SELECT COUNT(*) AS total FROM Appartenir a
+            WHERE a.Code_Equipe = (SELECT en.Code_Equipe FROM Entrainement en WHERE Entrain_ID = %s)
+            AND Date_Sortie IS NULL
         """,
         (id,),
     )
@@ -152,17 +163,14 @@ def presence(id: int):
 
     cursor.execute(
         """
-            SELECT m.nom, m.prenom, m.num_licence, p.present, p.motif_absence
+            SELECT m.Nom, m.Prenom, m.Num_Licence, p.Present, p.Motif_Absence
             FROM Membre m
-            JOIN Appartenance a ON a.membre_id = m.num_licence
-            LEFT JOIN Presence p ON p.membre_id = m.num_licence AND p.entrainement_id = %s
-            WHERE a.equipe_id = (SELECT equipe_id FROM Entrainement en WHERE en.id = %s)
-            AND a.date_sortie IS NULL
+            JOIN Appartenir a ON a.Num_Licence = m.Num_Licence
+            LEFT JOIN Presence p ON p.Num_Licence = m.Num_Licence AND p.Entrain_ID = %s
+            WHERE a.Code_Equipe = (SELECT Code_Equipe FROM Entrainement en WHERE en.Entrain_ID = %s)
+            AND a.Date_Sortie IS NULL
         """,
-        (
-            id,
-            id,
-        ),
+        (id, id),
     )
 
     membres = cursor.fetchall()

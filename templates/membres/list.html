@@ -14,7 +14,7 @@
             {% for equipe in equipes %}
                 <option value="{{ equipe.code_equipe }}"
                     {% if equipe_filtre == equipe.code_equipe %}selected{% endif %}>
-                    {{ equipe.nom }}
+                    {{ equipe.Nom_Equipe }}
                 </option>
             {% endfor %}
         </select>
@@ -44,11 +44,11 @@
             <tbody>
                 {% for membre in membres %}
                 <tr>
-                    <td><span class="badge bg-secondary">{{ membre.num_licence }}</span></td>
-                    <td><strong>{{ membre.nom }} {{ membre.prenom }}</strong></td>
-                    <td>{{ membre.telephone }}</td>
-                    <td>{{ membre.email }}</td>
-                    <td>{{ membre.date_adhesion }}</td>
+                    <td><span class="badge bg-secondary">{{ membre.Num_Licence }}</span></td>
+                    <td><strong>{{ membre.Nom }} {{ membre.Prenom }}</strong></td>
+                    <td>{{ membre.Telephone }}</td>
+                    <td>{{ membre.Email }}</td>
+                    <td>{{ membre.Date_Adhesion }}</td>
                     <td>
                         {% if membre.equipe %}
                             <span class="badge bg-primary">{{ membre.equipe }}</span>
@@ -57,15 +57,15 @@
                         {% endif %}
                     </td>
                     <td>
-                        <a href="{{ url_for('membres.fiche', id=membre.num_licence) }}"
+                        <a href="{{ url_for('membres.fiche', id=membre.Num_Licence) }}"
                            class="btn btn-sm btn-info text-white" title="Voir fiche">
                             <i class="bi bi-eye"></i>
                         </a>
-                        <a href="{{ url_for('membres.edit', id=membre.num_licence) }}"
+                        <a href="{{ url_for('membres.edit', id=membre.Num_Licence) }}"
                            class="btn btn-sm btn-warning" title="Modifier">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <form method="POST" action="{{ url_for('membres.delete', id=membre.num_licence) }}"
+                        <form method="POST" action="{{ url_for('membres.delete', id=membre.Num_Licence) }}"
                               class="d-inline"
                               onsubmit="return confirm('Supprimer ce membre ?')">
                             <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">

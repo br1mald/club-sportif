@@ -23,7 +23,7 @@
                             <select name="id_sport" class="form-select" required>
                                 <option value="">-- Choisir un sport --</option>
                                 {% for sport in sports %}
-                                    <option value="{{ sport.id_sport }}">{{ sport.nom }}</option>
+                                    <option value="{{ sport.id_sport }}">{{ sport.Nom }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -52,7 +52,7 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox"
                                                name="equipes" value="{{ equipe.code_equipe }}">
-                                        <label class="form-check-label">{{ equipe.nom }}</label>
+                                        <label class="form-check-label">{{ equipe.Nom_Equipe }}</label>
                                     </div>
                                 </div>
                                 {% endfor %}

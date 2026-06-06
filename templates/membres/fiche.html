@@ -15,23 +15,23 @@
                     <div class="rounded-circle bg-secondary d-inline-flex align-items-center
                                 justify-content-center text-white"
                          style="width:80px; height:80px; font-size:2rem;">
-                        {{ membre.prenom[0] }}{{ membre.nom[0] }}
+                        {{ membre.Prenom[0] }}{{ membre.Nom[0] }}
                     </div>
-                    <h5 class="mt-2 mb-0">{{ membre.nom }} {{ membre.prenom }}</h5>
-                    <small class="text-muted">Licence : {{ membre.num_licence }}</small>
+                    <h5 class="mt-2 mb-0">{{ membre.Nom }} {{ membre.Prenom }}</h5>
+                    <small class="text-muted">Licence : {{ membre.Num_Licence }}</small>
                 </div>
                 <hr>
-                <p><i class="bi bi-telephone"></i> {{ membre.telephone }}</p>
-                <p><i class="bi bi-envelope"></i> {{ membre.email }}</p>
-                <p><i class="bi bi-calendar"></i> Né(e) le {{ membre.date_naissance }}</p>
-                <p><i class="bi bi-calendar-check"></i> Adhésion : {{ membre.date_adhesion }}</p>
+                <p><i class="bi bi-telephone"></i> {{ membre.Telephone }}</p>
+                <p><i class="bi bi-envelope"></i> {{ membre.Email }}</p>
+                <p><i class="bi bi-calendar"></i> Né(e) le {{ membre.Date_Naissance }}</p>
+                <p><i class="bi bi-calendar-check"></i> Adhésion : {{ membre.Date_Adhesion }}</p>
                 {% if membre.equipe %}
                 <p><i class="bi bi-shield"></i>
                     <span class="badge bg-primary">{{ membre.equipe }}</span>
                 </p>
                 {% endif %}
                 <div class="d-flex gap-2 mt-3">
-                    <a href="{{ url_for('membres.edit', id=membre.num_licence) }}"
+                    <a href="{{ url_for('membres.edit', id=membre.Num_Licence) }}"
                        class="btn btn-warning btn-sm w-100">
                         <i class="bi bi-pencil"></i> Modifier
                     </a>
@@ -62,11 +62,11 @@
                     <tbody>
                         {% for c in cotisations %}
                         <tr>
-                            <td>{{ c.saison }}</td>
-                            <td>{{ c.montant }} FCFA</td>
-                            <td>{{ c.date_paiement or '—' }}</td>
+                            <td>{{ c.Saison }}</td>
+                            <td>{{ c.Montant }} FCFA</td>
+                            <td>{{ c.Date_Paiement or '—' }}</td>
                             <td>
-                                {% if c.statut == 'payee' %}
+                                {% if c.Statut == 'payee' %}
                                     <span class="badge bg-success">Payée</span>
                                 {% else %}
                                     <span class="badge bg-danger">Impayée</span>
@@ -108,15 +108,15 @@
                     <tbody>
                         {% for p in presences %}
                         <tr>
-                            <td>{{ p.date }}</td>
-                            <td>{{ p.theme }}</td>
+                            <td>{{ p.Date }}</td>
+                            <td>{{ p.Theme }}</td>
                             <td>
-                                {% if p.present %}
+                                {% if p.Present %}
                                     <span class="badge bg-success">Présent</span>
                                 {% else %}
                                     <span class="badge bg-danger">Absent</span>
-                                    {% if p.motif_absence %}
-                                        <small class="text-muted"> — {{ p.motif_absence }}</small>
+                                    {% if p.Motif_Absence %}
+                                        <small class="text-muted"> — {{ p.Motif_Absence }}</small>
                                     {% endif %}
                                 {% endif %}
                             </td>

@@ -11,11 +11,11 @@ def list_competitions():
     cursor = db.cursor(dictionary=True)
 
     query = """
-            SELECT c.nom, c.date, c.lieu, c.type, c.id AS id_competition, s.nom AS sport, (
-                SELECT COUNT(*) FROM Participation p WHERE p.competition_id = c.id
+            SELECT c.Nom, c.Date, c.Lieu, c.Type, c.Comp_ID AS id_competition, s.Nom AS sport, (
+                SELECT COUNT(*) FROM Participation p WHERE p.Comp_ID = c.Comp_ID
             ) AS nb_participants
             FROM Competition c
-            JOIN Sport s ON c.sport_id = s.id
+            JOIN Sport s ON c.Sport_ID = s.Sport_ID
             WHERE 1 = 1
         """
 
@@ -24,10 +24,10 @@ def list_competitions():
     type_filtre = request.args.get("type")
 
     if type_filtre:
-        query += " AND type = %s"
+        query += " AND c.Type = %s"
         params.append(type_filtre)
 
-    query += " ORDER BY c.date DESC"
+    query += " ORDER BY c.Date DESC"
 
     cursor.execute(query, params)
 
@@ -43,12 +43,21 @@ def add():
     cursor = db.cursor(dictionary=True)
 
     if request.method == "POST":
+        cursor.execute("SELECT MAX(Comp_ID) AS max_id FROM Competition")
+        result = cursor.fetchone()
+        if result and result["max_id"]:  # type: ignore
+            next_num = int(result["max_id"][3:]) + 1  # type: ignore
+        else:
+            next_num = 1
+        comp_id = f"CMP{next_num:04d}"
+
         cursor.execute(
             """
-                INSERT INTO Competition (nom, sport_id, date, lieu, type)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO Competition (Comp_ID, Nom, Sport_ID, Date, Lieu, Type)
+                VALUES (%s, %s, %s, %s, %s, %s)
             """,
             (
+                comp_id,
                 request.form["nom"],
                 request.form["id_sport"],
                 request.form["date"],
@@ -57,27 +66,26 @@ def add():
             ),
         )
 
-        competition_id = cursor.lastrowid
-
         equipes = request.form.getlist("equipes")
+        print(equipes)
 
         for equipe in equipes:
             if request.form["type"] in ("championnat", "coupe"):
                 cursor.execute(
                     """
-                        SELECT m.nom, m.prenom
+                        SELECT m.Nom, m.Prenom
                         FROM Membre m
-                        JOIN Appartenir a ON a.Num_Licence = m.num_licence
-                        JOIN Cotisation c ON c.num_licence = m.num_licence
-                        WHERE a.equipe_id = %s AND a.date_sortie IS NULL
-                        AND c.statut = 'impayee'
+                        JOIN Appartenir a ON a.Num_Licence = m.Num_Licence
+                        JOIN Cotisation c ON c.Num_Licence = m.Num_Licence
+                        WHERE a.Code_Equipe = %s AND a.Date_Sortie IS NULL
+                        AND c.Statut = 'impayee'
                     """,
                     (equipe,),
                 )
                 impayees = cursor.fetchall()
 
                 if impayees:
-                    noms = ", ".join(f"{m['prenom']} {m['nom']}" for m in impayees)  # type: ignore
+                    noms = ", ".join(f"{m['Prenom']} {m['Nom']}" for m in impayees)  # type: ignore
                     flash(
                         f"Équipe {equipe} bloquée - cotisations impayées: {noms}",
                         "danger",
@@ -86,29 +94,26 @@ def add():
 
             cursor.execute(
                 """
-                INSERT INTO Participation (equipe_id, competition_id)
+                    INSERT INTO Participation (Code_Equipe, Comp_ID)
                     VALUES (%s, %s)
                 """,
-                (
-                    equipe,
-                    competition_id,
-                ),
+                (equipe, comp_id),
             )
 
         db.commit()
         cursor.close()
-        flash("Competition ajoutée avec succès", "success")
+        flash("Compétition ajoutée avec succès", "success")
 
         return redirect(url_for("competitions.list_competitions"))
 
     cursor.execute("""
-            SELECT s.nom, s.id AS id_sport
+            SELECT s.Nom, s.Sport_ID AS id_sport
             FROM Sport s
         """)
     sports = cursor.fetchall()
 
     cursor.execute("""
-            SELECT code AS code_equipe, nom
+            SELECT Code_Equipe AS code_equipe, Nom_Equipe
             FROM Equipe
         """)
 
@@ -119,18 +124,17 @@ def add():
     return render_template("competitions/add.html", sports=sports, equipes=equipes)
 
 
-@competitions_bp.route("/<int:id>/resultats", methods=["GET", "POST"])
-def resultats(id: int):
+@competitions_bp.route("/<id>/resultats", methods=["GET", "POST"])
+def resultats(id: str):
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
     cursor.execute(
         """
-            SELECT p.id, p.competition_id, p.equipe_id AS code_equipe, p.resultat, p.classement, e.nom AS equipe
+            SELECT p.Code_Equipe AS code_equipe, p.Resultat, e.Nom_Equipe AS equipe
             FROM Participation p
-            JOIN Equipe e on p.equipe_id = e.code
-            WHERE p.competition_id = %s
-            ORDER BY p.classement ASC
+            JOIN Equipe e ON p.Code_Equipe = e.Code_Equipe
+            WHERE p.Comp_ID = %s
         """,
         (id,),
     )
@@ -140,16 +144,14 @@ def resultats(id: int):
     if request.method == "POST":
         for p in participations:
             resultat = request.form.get(f"resultat_{p['code_equipe']}")  # type: ignore
-            classement = request.form.get(f"classement_{p['code_equipe']}") or None  # type: ignore
             cursor.execute(
                 """
                     UPDATE Participation
-                    SET resultat = %s, classement = %s
-                    WHERE competition_id = %s AND equipe_id = %s
+                    SET Resultat = %s
+                    WHERE Comp_ID = %s AND Code_Equipe = %s
                 """,
                 (
                     resultat,
-                    classement,
                     id,
                     p["code_equipe"],  # type: ignore
                 ),
@@ -157,15 +159,15 @@ def resultats(id: int):
 
         db.commit()
         cursor.close()
-        flash("Résultat enregistré avec succès", "success")
+        flash("Résultats enregistrés avec succès", "success")
 
         return redirect(url_for("competitions.list_competitions"))
 
     cursor.execute(
         """
-            SELECT c.nom, c.date, c.lieu, c.type, c.id AS id_competition
+            SELECT c.Nom, c.Date, c.Lieu, c.Type, c.Comp_ID AS id_competition
             FROM Competition c
-            WHERE c.id = %s
+            WHERE c.Comp_ID = %s
         """,
         (id,),
     )

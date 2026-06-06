@@ -11,7 +11,7 @@
             {% for equipe in equipes %}
                 <option value="{{ equipe.code_equipe }}"
                     {% if equipe_filtre == equipe.code_equipe %}selected{% endif %}>
-                    {{ equipe.nom }}
+                    {{ equipe.Nom_Equipe }}
                 </option>
             {% endfor %}
         </select>
@@ -41,14 +41,14 @@
             <tbody>
                 {% for e in entrainements %}
                 <tr>
-                    <td>{{ e.date }}</td>
+                    <td>{{ e.Date }}</td>
                     <td><span class="badge bg-primary">{{ e.equipe }}</span></td>
-                    <td>{{ e.theme }}</td>
-                    <td>{{ e.lieu }}</td>
-                    <td>{{ e.heure_debut }}</td>
-                    <td>{{ e.duree }} min</td>
+                    <td>{{ e.Theme }}</td>
+                    <td>{{ e.Lieu }}</td>
+                    <td>{{ e.Heure_Debut }}</td>
+                    <td>{{ e.Duree }} min</td>
                     <td>
-                        <a href="{{ url_for('entrainements.presence', id=e.id) }}"
+                        <a href="{{ url_for('entrainements.presence', id=e.Entrain_ID) }}"
                            class="btn btn-sm btn-success" title="Présences">
                             <i class="bi bi-person-check"></i>
                         </a>

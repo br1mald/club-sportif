@@ -11,5 +11,5 @@ class Config:
         "host": "localhost",
         "user": "club_app",
         "password": os.getenv("DB_PASSWORD"),
-        "database": "club_sport",
+        "database": "club_sportif",
     }
