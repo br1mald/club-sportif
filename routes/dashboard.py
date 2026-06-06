@@ -25,13 +25,13 @@ def index():
     cursor.execute(
         "SELECT COUNT(*) AS prochaines_competitions FROM Competition WHERE date >= CURDATE()"
     )
-    prochaines_competitions = cursor.fetchone()["prochaines_competitions"]  # type: ignore
+    prochaines_competitions_count = cursor.fetchone()["prochaines_competitions"]  # type: ignore
 
     stats = {
         "total_membres": total_membres,
         "cotisations_impayees": cotisations_impayees,
         "total_equipes": total_equipes,
-        "prochaines_competitions": prochaines_competitions,
+        "prochaines_competitions": prochaines_competitions_count,
     }
 
     cursor.execute("""
@@ -67,6 +67,8 @@ def index():
         """)
 
     meilleurs_assidus = cursor.fetchall()
+
+    cursor.close()
 
     return render_template(
         "dashboard.html",
