@@ -6,7 +6,7 @@ load_dotenv()
 
 
 class Config:
-    SECRET_KEY = "club-sportif-2026"
+    SECRET_KEY = os.getenv("SECRET_KEY", "club-sportif-2026")
     DB_CONFIG = {
         "host": "localhost",
         "user": "club_app",
